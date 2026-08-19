@@ -1,0 +1,25 @@
+{
+  "name": "jiuheng-health-assessment",
+  "outputDirectory": "public",
+  "nodeVersion": "22.11.0",
+  "headers": [
+    {
+      "source": "/*.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/constitution-data.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    }
+  ]
+}
