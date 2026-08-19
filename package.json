@@ -1,0 +1,11 @@
+{
+  "name": "jiuheng-health-assessment",
+  "version": "1.0.0",
+  "private": true,
+  "description": "九衡健康测评平台 - 腾讯云 EdgeOne Pages 边缘函数版本",
+  "scripts": {
+    "build": "echo \"无需构建，静态文件由 EdgeOne Pages 直接托管\" && exit 0"
+  },
+  "keywords": ["edgeone", "pages", "edge-functions", "kv"],
+  "license": "UNLICENSED"
+}
