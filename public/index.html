@@ -1,1 +1,2732 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>九衡 · 健康测评</title>
+<style>
+:root{
+  --ink:#17312b;--jade:#315f50;--paper:#f4f0e7;--cream:#fbf9f3;
+  --gold:#bd8b4a;--line:rgba(23,49,43,.15);--muted:#75837e;
+  --danger:#c4564e;--bg:#f0ede4;
+  --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+input,button,select,textarea{font:inherit;color:inherit;outline:none}
+button{cursor:pointer;border:none;background:none}
+a{color:inherit;text-decoration:none}
 
+#client-view{display:block}
+#admin-view{display:none}
+body{background:var(--paper);color:var(--ink);font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;font-size:15px;line-height:1.6;overflow-x:hidden;margin:0;padding:0;-webkit-text-size-adjust:100%}
+body.admin-active{background:var(--bg);font-size:14px}
+
+.page{display:none;min-height:100vh}.page.active{display:block}
+
+/* ── 首页 ── */
+.home-wrap{min-height:100vh;display:flex;flex-direction:column}
+.home-top{background:var(--ink);color:#fff;padding:40px 24px 32px;position:relative}
+.home-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+.home-logo .diamond{width:34px;height:34px;border:1.5px solid var(--gold);transform:rotate(45deg);display:flex;align-items:center;justify-content:center}
+.home-logo .diamond span{transform:rotate(-45deg);font-family:"Songti SC",serif;color:var(--gold);font-size:18px;font-weight:700}
+.home-logo b{font-family:"Songti SC",serif;font-size:17px;letter-spacing:.1em}
+.home-eyebrow{font-size:11px;letter-spacing:.2em;color:var(--gold);margin-bottom:12px}
+.home-h1{font-family:"Songti SC",serif;font-size:30px;font-weight:500;line-height:1.4;color:#dbc394;margin-bottom:12px}
+.home-sub{font-size:13px;color:#9bb0aa;line-height:1.7;max-width:320px}
+.home-body{flex:1;padding:32px 24px;display:flex;flex-direction:column;gap:20px}
+.home-quote{background:var(--cream);border-left:3px solid var(--gold);padding:18px 16px;border-radius:0 10px 10px 0}
+.home-quote p{font-family:"Songti SC",serif;font-size:14px;line-height:1.9;color:var(--jade)}
+.input-group{display:flex;flex-direction:column;gap:10px}
+.input-group label{font-size:12px;color:var(--muted);letter-spacing:.05em}
+.input-group input{padding:15px 16px;border:1.5px solid var(--line);border-radius:var(--radius);background:#fff;font-size:16px;letter-spacing:.05em}
+.input-group input:focus{border-color:var(--jade)}
+.btn-primary{padding:15px;border-radius:var(--radius);background:var(--ink);color:#fff;font-size:15px;font-weight:600;letter-spacing:.1em;transition:opacity .2s}
+.btn-primary:active{opacity:.8}
+.btn-primary:disabled{opacity:.4}
+.btn-text{color:var(--jade);font-size:13px;text-align:center;padding:8px}
+.home-features{display:flex;gap:16px;justify-content:center;font-size:11px;color:var(--muted);letter-spacing:.05em}
+.home-features span{display:flex;align-items:center;gap:4px}
+.home-features span::before{content:"◇";color:var(--gold);font-size:8px}
+.home-bottom{padding:16px 24px 32px;text-align:center}
+.home-bottom a{color:var(--muted);font-size:12px;text-decoration:none;border-bottom:1px solid var(--line)}
+.error-msg{color:#c4564e;font-size:12px;padding:4px 2px;display:none}
+.error-msg.show{display:block}
+
+/* ── 测评选择页 ── */
+.select-wrap{min-height:100vh;display:flex;flex-direction:column}
+.select-top{padding-left:56px}
+.select-body{flex:1;padding:24px;display:flex;flex-direction:column;gap:16px}
+.select-card{background:#fff;border-radius:var(--radius);padding:28px 24px;position:relative;overflow:hidden;border:1px solid var(--line)}
+.select-card::before{content:"";position:absolute;top:0;left:0;width:4px;height:100%;background:var(--gold)}
+.select-card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.sc-num{font-family:"Songti SC",serif;font-size:36px;color:var(--paper);line-height:1}
+.sc-tag{font-size:11px;padding:4px 10px;border-radius:20px;background:#e8e8e8;color:var(--muted)}
+.sc-tag.member{background:var(--ink);color:var(--gold)}
+.sc-tag.done{background:#dce9e3;color:var(--jade)}
+.sc-title{font-family:"Songti SC",serif;font-size:22px;font-weight:500;margin-bottom:8px}
+.sc-desc{font-family:"Songti SC",serif;font-size:15px;line-height:1.7;color:var(--jade);margin-bottom:12px}
+.sc-features{font-size:12px;color:var(--muted);margin-bottom:20px}
+.sc-btn{width:100%;padding:14px;border-radius:10px;background:var(--ink);color:#fff;font-size:14px;font-weight:600;transition:opacity .2s}
+.sc-btn:active{opacity:.8}
+.sc-btn:disabled{opacity:.5;cursor:not-allowed}
+.select-bottom{padding:8px 24px 32px;text-align:center}
+
+/* ── 测评页 ── */
+.quiz-top{position:sticky;top:0;background:var(--ink);color:#fff;padding:14px 20px 14px 56px;z-index:10;display:flex;justify-content:space-between;align-items:center}
+.quiz-top .q-logo{font-family:"Songti SC",serif;font-size:15px;color:var(--gold)}
+.quiz-top .q-counter{font-size:12px;color:#9bb0aa}
+.quiz-progress{height:3px;background:rgba(255,255,255,.15);position:relative}
+.quiz-progress b{display:block;height:100%;background:var(--gold);transition:width .3s}
+.quiz-body{padding:32px 24px 120px}
+.quiz-no{font-size:11px;letter-spacing:.2em;color:var(--gold);margin-bottom:16px}
+.quiz-question{font-family:"Songti SC",serif;font-size:22px;font-weight:500;line-height:1.5;color:var(--ink);margin-bottom:32px;min-height:68px}
+.quiz-options{display:flex;flex-direction:column;gap:10px}
+.quiz-opt{padding:16px 18px;border:1.5px solid var(--line);border-radius:12px;background:#fff;display:flex;justify-content:space-between;align-items:center;transition:all .15s}
+.quiz-opt:active{border-color:var(--jade)}
+.quiz-opt.selected{border-color:var(--ink);background:var(--ink);color:#fff}
+.quiz-opt.selected .opt-sub{color:rgba(255,255,255,.6)}
+.opt-label{font-size:16px;font-weight:500}
+.opt-sub{font-size:11px;color:var(--muted)}
+.quiz-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);padding:12px 20px;display:flex;gap:12px;justify-content:space-between;align-items:center;z-index:10}
+.quiz-nav .btn-prev{padding:12px 24px;border:1px solid var(--line);border-radius:10px;color:var(--muted);font-size:14px}
+.quiz-nav .btn-next{padding:12px 32px;background:var(--ink);color:#fff;border-radius:10px;font-size:14px;font-weight:600}
+.quiz-nav .btn-next:disabled{opacity:.3}
+.quiz-gender{padding:20px 0}
+.quiz-gender p{font-size:13px;color:var(--muted);text-align:center;margin-bottom:16px}
+.quiz-gender-opts{display:flex;gap:12px;justify-content:center}
+.quiz-gender-opts button{flex:1;max-width:140px;padding:20px;border:1.5px solid var(--line);border-radius:12px;background:#fff;font-size:16px}
+.quiz-gender-opts button.selected{border-color:var(--ink);background:var(--ink);color:#fff}
+
+/* ── 生活力画像：前置问卷 ── */
+.v-profile-block{border-top:1px solid var(--line);padding:20px 0}
+.v-profile-block:first-of-type{border-top:none}
+.v-profile-block>div:first-child{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.v-profile-block small{color:var(--muted);font-size:12px}
+.v-profile-chips{display:flex;flex-wrap:wrap;gap:8px}
+.v-profile-chip{padding:11px 16px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:14px;transition:all .15s}
+.v-profile-chip:active{border-color:var(--jade)}
+.v-profile-chip.selected{background:var(--jade);color:#fff;border-color:var(--jade)}
+
+/* ── 生活力画像：维度进度 ── */
+.v-dims{display:flex;justify-content:space-between;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.v-dim{font-size:11px;color:var(--muted);text-align:center;min-width:48px;flex-shrink:0}
+.v-dim b{display:grid;place-items:center;width:24px;height:24px;border:1px solid var(--line);border-radius:50%;margin:0 auto 4px;font-size:12px}
+.v-dim.done b{background:var(--jade);color:#fff;border-color:var(--jade)}
+.v-dim.current b{background:var(--ink);color:#fff;border-color:var(--ink)}
+.v-dim.done{color:var(--ink)}
+.v-dim.current{color:var(--ink)}
+
+/* ── 生活力画像：测评选项 ── */
+.v-answers{display:flex;flex-direction:column;gap:10px}
+.v-answer{display:flex;align-items:center;gap:12px;padding:16px 14px;border:1.5px solid var(--line);border-radius:12px;background:#fff;transition:all .15s}
+.v-answer:active{border-color:var(--jade)}
+.v-answer.selected{border-color:var(--jade);background:#e3ece6}
+.v-answer .va-label{width:32px;height:32px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:14px;flex-shrink:0}
+.v-answer.selected .va-label{background:var(--jade);color:#fff;border-color:var(--jade)}
+.v-answer .va-text{flex:1;font-size:15px}
+.v-answer .va-check{opacity:0;color:var(--jade);font-size:18px}
+.v-answer.selected .va-check{opacity:1}
+
+/* ── 生活力画像：模块完成弹窗 ── */
+.v-module-modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(23,49,43,.88);display:flex;align-items:center;justify-content:center;z-index:9999;animation:vModalIn .35s ease}
+@keyframes vModalIn{from{opacity:0}to{opacity:1}}
+.v-module-box{background:var(--cream);padding:48px 40px;text-align:center;max-width:380px;width:88%;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:vBoxIn .4s ease}
+@keyframes vBoxIn{from{opacity:0;transform:scale(.85) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.v-module-icon{font-size:46px;margin-bottom:10px}
+.v-module-title{font:500 24px/1.4 "Songti SC",serif;color:var(--jade);margin:0 0 10px}
+.v-module-desc{font-size:14px;color:#687771;line-height:1.8;margin:0 0 16px}
+.v-module-hint{font-size:12px;color:#a0ada8;margin:0}
+
+/* ── 生活力画像：目标选择 ── */
+.v-goal-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.v-goal-btn{padding:16px;text-align:left;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:14px;transition:all .15s}
+.v-goal-btn:active{border-color:var(--jade)}
+.v-goal-btn.selected{background:var(--jade);color:#fff;border-color:var(--jade)}
+
+/* ── 生活力画像：结果页 ── */
+.v-result-hero{background:var(--ink);color:#fff;padding:40px 24px 32px 56px}
+.v-result-hero .eyebrow{font-size:11px;letter-spacing:.2em;color:var(--gold);margin-bottom:12px}
+.v-total{display:flex;align-items:flex-end;gap:24px;margin-top:8px}
+.v-total-score{font-family:"Songti SC",serif;font-size:80px;line-height:1;color:#dbc394}
+.v-total-score small{font-size:16px;color:#9bb0aa}
+.v-total-info h1{font-family:"Songti SC",serif;font-size:22px;font-weight:500;color:#f2eadb;line-height:1.4;margin-bottom:6px}
+.v-total-info p{font-size:13px;color:#c9d3cf}
+.v-total-info b{color:var(--gold)}
+.v-radar{display:flex;justify-content:center;padding:20px 0}
+.v-radar svg{width:320px;max-width:100%}
+.radar-grid{fill:none;stroke:rgba(23,49,43,.15)}
+.radar-area{fill:rgba(49,95,80,.4);stroke:var(--jade);stroke-width:1}
+.radar-dot{fill:var(--gold)}
+.radar-label{font-size:5.5px;fill:var(--ink);font-family:"Microsoft YaHei",sans-serif;font-weight:bold}
+.v-bars{display:flex;flex-direction:column;gap:8px}
+.v-bar-row{display:grid;grid-template-columns:65px 1fr 30px;gap:8px;align-items:center;font-size:12px}
+.v-bar-row span{color:var(--muted)}
+.v-bar-track{height:5px;background:#d0ccc1;border-radius:3px;overflow:hidden}
+.v-bar-fill{display:block;height:100%;border-radius:3px;transition:width .5s}
+.v-bar-row strong{font-size:13px;text-align:right;color:var(--ink)}
+.v-focus{border-top:1px solid var(--line);padding:18px 0}
+.v-focus:first-child{border-top:none;padding-top:0}
+.v-focus h3{font-family:"Songti SC",serif;font-size:18px;font-weight:500;margin:0 0 8px}
+.v-focus h3 span{float:right;font:12px "PingFang SC","Microsoft YaHei",sans-serif;color:var(--muted)}
+.v-focus p{font-size:13px;line-height:1.8;color:#51635d}
+.v-goal-box{background:#e9efe9;border-left:3px solid var(--gold);padding:16px 18px;margin-top:16px;border-radius:0 10px 10px 0}
+.v-goal-box b{display:block;font-size:14px;color:var(--ink);margin-bottom:4px}
+.v-goal-box p{font-size:13px;color:#51635d;line-height:1.7}
+
+/* ── 生活力画像：综合画像（会员） ── */
+.v-combined{background:#e4ebe6;padding:36px 20px}
+.v-combined .section-no{font-size:11px;letter-spacing:.2em;color:var(--gold);margin-bottom:8px}
+.v-combined h2{font-family:"Songti SC",serif;font-size:22px;font-weight:500;line-height:1.4;margin-bottom:20px}
+.v-portrait{display:flex;flex-direction:column;gap:12px}
+.v-portrait-item{background:#fff;padding:20px;border-radius:10px}
+.v-portrait-item span{display:block;font-size:12px;color:#81908a;margin-bottom:8px}
+.v-portrait-item b{display:block;font-family:"Songti SC",serif;font-size:20px;margin-bottom:4px}
+.v-portrait-item small{display:block;font-size:12px;color:var(--muted)}
+.v-portrait-arrow{text-align:center;font-size:22px;color:var(--gold)}
+.v-portrait-priority{background:var(--ink);color:#fff;padding:20px;border-radius:10px}
+.v-portrait-priority span{display:block;font-size:12px;color:#81908a;margin-bottom:10px}
+.v-portrait-priority b{display:block;font-size:14px;margin:6px 0}
+.v-dedication{background:linear-gradient(160deg,var(--paper) 0%,#ebe7dc 100%);padding:36px 20px;text-align:center;position:relative;overflow:hidden;margin:0 20px 20px;border-radius:12px}
+.v-dedication:before{content:"";position:absolute;left:50%;top:0;transform:translateX(-50%);width:60px;height:3px;background:var(--gold)}
+.v-dedication .section-no{margin-top:16px}
+.v-dedication h2{font-family:"Songti SC",serif;font-size:22px;font-weight:500;line-height:1.5;margin:16px 0 20px;color:var(--ink)}
+.v-dedication-body{max-width:680px;margin:0 auto;text-align:left}
+.v-dedication-body p{font-size:14px;line-height:2;color:#4a5a54;margin:12px 0}
+.v-dedication-body b{color:var(--gold);font-weight:600}
+
+/* ── 结果页 ── */
+.result-hero{background:var(--ink);color:#fff;padding:48px 24px 36px 56px}
+.result-hero .eyebrow{font-size:11px;letter-spacing:.2em;color:var(--gold);margin-bottom:12px}
+.result-hero h1{font-family:"Songti SC",serif;font-size:42px;font-weight:500;color:#dbc394;margin-bottom:14px}
+.result-hero .summary{font-family:"Songti SC",serif;font-size:14px;line-height:1.9;color:#c9d3cf}
+.result-section{padding:28px 20px}
+.result-section .section-no{font-size:11px;letter-spacing:.2em;color:var(--gold);margin-bottom:10px}
+.result-section h2{font-family:"Songti SC",serif;font-size:20px;font-weight:500;line-height:1.4;margin-bottom:14px}
+.result-section .intro{font-size:14px;line-height:1.9;color:#51635d}
+.scores-card{background:#e9e5da;border-radius:12px;padding:20px;margin:0 20px}
+.scores-card .section-no{margin-bottom:12px}
+.score-row{display:grid;grid-template-columns:56px 1fr 32px;gap:8px;align-items:center;margin:10px 0}
+.score-row span{font-size:12px}
+.score-bar{height:5px;background:#d0ccc1;border-radius:3px;overflow:hidden}
+.score-bar b{display:block;height:100%;border-radius:3px;transition:width .5s}
+.score-row strong{font-size:13px;text-align:right}
+.score-secondary{font-size:12px;color:var(--muted);margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.lock-section{margin:0 20px 28px;padding:28px 20px;background:linear-gradient(135deg,#17312b,#315f50);border-radius:14px;color:#fff;text-align:center}
+.lock-section .lock-icon{font-size:36px;margin-bottom:14px}
+.lock-section h2{font-family:"Songti SC",serif;font-size:20px;color:#dbc394;margin-bottom:14px;line-height:1.5}
+.lock-section p{font-size:13px;line-height:1.8;color:#c9d3cf;margin-bottom:14px}
+.lock-section .lock-cta{display:inline-block;padding:10px 24px;border:1px solid var(--gold);border-radius:8px;color:var(--gold);font-size:13px;margin-top:16px}
+.lock-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:rgba(255,255,255,.12);margin:18px 0;border-radius:8px;overflow:hidden}
+.lock-grid .lock-item{background:#17312b;padding:16px 14px;text-align:left}
+.lock-grid .lock-item b{font-size:13px;display:block}
+.lock-grid .lock-item small{display:block;color:#869992;margin-top:5px;font-size:11px}
+.lock-offer{background:#f2ebdc;color:var(--ink);padding:22px;border-radius:10px;margin-top:16px;display:grid;grid-template-columns:1fr 1.4fr;gap:24px;align-items:center;text-align:left}
+.lock-offer h3{font:36px "Songti SC",serif;margin:6px 0;color:var(--ink)}
+.lock-offer h3 small{font-size:14px;color:var(--muted)}
+.lock-offer ul{columns:2;font-size:12px;line-height:2;color:var(--ink)}
+.lock-offer>div>small{color:var(--muted);font-size:11px}
+@media(max-width:600px){
+  .lock-grid{grid-template-columns:1fr}
+  .lock-offer{grid-template-columns:1fr;gap:16px;text-align:center}
+  .lock-offer ul{columns:1;text-align:left}
+}
+.detail-section{background:#fff;margin:0 20px 12px;padding:24px 20px;border-radius:12px}
+.detail-section:nth-child(even){background:#f1eee6}
+.detail-section h3{font-family:"Songti SC",serif;font-size:17px;font-weight:500;margin:10px 0 12px}
+.detail-section ul{padding-left:18px;margin-bottom:12px}
+.detail-section li{font-size:13px;line-height:1.8;margin:6px 0;color:#51635d}
+.detail-section .explain{font-size:13px;line-height:1.9;color:#51635d;padding-top:12px;border-top:1px solid var(--line)}
+.detail-section.dark{background:var(--ink);color:#fff}
+.detail-section.dark h3{color:#dbc394}
+.detail-section.dark .explain{color:#c9d3cf;border-color:rgba(255,255,255,.15)}
+.detail-section.dark li{color:#c9d3cf}
+.misconceptions{background:#efe5d3!important;margin:0 20px 12px;padding:24px 20px;border-radius:12px}
+.misconceptions .mis-item{margin-bottom:16px}
+.misconceptions .mis-item b{font-size:14px;color:var(--ink);display:block;margin-bottom:4px}
+.misconceptions .mis-item p{font-size:13px;line-height:1.8;color:#51635d}
+.result-actions{padding:0 20px 40px;display:flex;flex-direction:column;gap:10px}
+.result-actions .btn-primary{background:var(--ink)}
+.result-actions .btn-text{padding:6px}
+.result-foot{padding:0 20px 40px;font-size:11px;color:#697872;line-height:1.7}
+
+/* ── 历史页 ── */
+.history-top{background:var(--ink);color:#fff;padding:40px 24px 28px 56px}
+.history-top .eyebrow{font-size:11px;letter-spacing:.2em;color:var(--gold);margin-bottom:8px}
+.history-top h1{font-family:"Songti SC",serif;font-size:24px;font-weight:500;color:#dbc394}
+.history-body{padding:20px}
+.history-empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.history-empty .icon{font-size:40px;margin-bottom:14px;opacity:.3}
+.history-item{background:#fff;border-radius:12px;padding:18px;margin-bottom:12px;border-left:3px solid var(--gold)}
+.history-item.vitality-item{border-left-color:var(--jade)}
+.history-item .h-date{font-size:11px;color:var(--muted);margin-bottom:6px}
+.history-item .h-badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:10px;margin-left:8px;vertical-align:middle}
+.history-item .h-badge.constitution{background:#e0e8e4;color:var(--jade)}
+.history-item .h-badge.vitality{background:#f0e6d0;color:#8a6d3b}
+.history-item .h-type{font-family:"Songti SC",serif;font-size:20px;font-weight:500;color:var(--ink);margin-bottom:4px}
+.history-item .h-desc{font-size:12px;color:#51635d;line-height:1.6}
+.history-item .h-arrow{text-align:right;font-size:12px;color:var(--jade);margin-top:8px}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .3s ease}
+
+/* ── 左上角返回按钮 ── */
+.nav-back-btn{position:fixed;top:16px;left:16px;z-index:100;width:40px;height:40px;border-radius:50%;background:rgba(23,49,43,.85);color:#dbc394;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 12px rgba(0,0,0,.25);cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.nav-back-btn:active{transform:scale(.9);background:rgba(23,49,43,1)}
+.nav-back-btn.light{background:rgba(255,255,255,.9);color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.12)}
+
+/* ── 子管理员搜索筛选栏 ── */
+.sub-filter-bar{background:#fff;border-radius:12px;padding:16px;margin-bottom:16px;border:1px solid var(--line)}
+.sub-filter-bar .sf-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.sub-filter-bar .sf-field{flex:1;min-width:120px}
+.sub-filter-bar .sf-field label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}
+.sub-filter-bar .sf-field input,.sub-filter-bar .sf-field select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px}
+.sub-filter-bar .sf-btns{display:flex;gap:8px;margin-top:10px}
+.sub-filter-bar .sf-btns button{padding:7px 14px;border-radius:8px;font-size:12px;border:1px solid var(--line);background:#fff;color:var(--jade)}
+.sub-filter-bar .sf-btns button.reset{color:var(--muted)}
+.sub-ops-toggle{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--jade);cursor:pointer;padding:4px 0;margin-top:6px}
+.sub-ops-toggle .arrow{display:inline-block;transition:transform .2s}
+.sub-ops-toggle.open .arrow{transform:rotate(90deg)}
+.sub-ops-content{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.sub-ops-content.open{max-height:500px;overflow-y:auto}
+.sub-ops-empty{font-size:12px;color:var(--muted);padding:4px 0}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.slide-in{animation:slideIn .25s ease}
+
+/* ════ 管理端样式 ════ */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--ink)}
+.login-box{background:#fff;border-radius:16px;padding:40px 36px;width:360px;max-width:90vw}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px;justify-content:center}
+.login-logo .diamond{width:34px;height:34px;border:1.5px solid var(--gold);transform:rotate(45deg);display:flex;align-items:center;justify-content:center}
+.login-logo .diamond span{transform:rotate(-45deg);font-family:"Songti SC",serif;color:var(--gold);font-size:18px;font-weight:700}
+.login-logo b{font-family:"Songti SC",serif;font-size:16px;letter-spacing:.1em}
+.login-box h2{font-family:"Songti SC",serif;font-size:22px;font-weight:500;text-align:center;margin-bottom:6px}
+.login-box .sub{text-align:center;color:var(--muted);font-size:12px;margin-bottom:28px}
+.login-field{margin-bottom:16px}
+.login-field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+.login-field input{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;font-size:15px}
+.login-field input:focus{border-color:var(--jade)}
+.login-btn{width:100%;padding:13px;background:var(--ink);color:#fff;border-radius:10px;font-size:15px;font-weight:600;margin-top:8px}
+.login-btn:active{opacity:.8}
+.login-error{color:var(--danger);font-size:12px;text-align:center;margin-top:10px;display:none}
+.login-error.show{display:block}
+.login-back{text-align:center;margin-top:18px}
+.login-back a{font-size:12px;color:var(--muted)}
+
+.admin-wrap{display:none}
+.admin-wrap.active{display:block}
+.admin-top{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--line);padding:12px 24px;display:flex;justify-content:space-between;align-items:center}
+.admin-top .a-left{display:flex;align-items:center;gap:12px}
+.admin-top .a-logo{display:flex;align-items:center;gap:8px}
+.admin-top .a-logo .diamond{width:26px;height:26px;border:1.2px solid var(--gold);transform:rotate(45deg);display:flex;align-items:center;justify-content:center}
+.admin-top .a-logo .diamond span{transform:rotate(-45deg);font-family:"Songti SC",serif;color:var(--gold);font-size:13px;font-weight:700}
+.admin-top .a-logo b{font-family:"Songti SC",serif;font-size:15px}
+.admin-top .a-right{display:flex;align-items:center;gap:12px;font-size:13px}
+.admin-top .a-user{color:var(--muted)}
+.admin-top .a-user b{color:var(--ink)}
+.admin-nav{display:flex;gap:6px}
+.admin-nav button{padding:8px 14px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff;color:var(--jade)}
+.admin-nav button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.admin-nav button.logout{color:var(--danger);border-color:var(--line)}
+
+.admin-content{padding:24px;max-width:1300px;margin:0 auto}
+
+.dashboard{background:#fff;border-top:3px solid var(--gold);border-radius:12px;padding:24px;margin-bottom:20px}
+.dash-head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.dash-head .dash-title{font-family:"Songti SC",serif;font-size:20px;font-weight:500}
+.dash-head .dash-eyebrow{font-size:11px;letter-spacing:.15em;color:var(--gold);margin-bottom:4px}
+.dash-dates{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.dash-dates label{font-size:11px;color:var(--muted);display:block;margin-bottom:4px}
+.dash-dates input{padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px}
+.dash-presets{display:flex;gap:6px;margin-top:10px}
+.dash-presets button{padding:6px 14px;border:1px solid var(--line);border-radius:6px;font-size:12px;background:var(--paper)}
+.dash-presets button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.dash-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}
+.dash-metric{background:var(--paper);border-radius:10px;padding:18px;text-align:center}
+.dash-metric strong{display:block;font-size:30px;color:var(--jade);font-family:"Songti SC",serif}
+.dash-metric span{font-size:12px;color:var(--muted);margin-top:4px;display:block}
+
+.keygen{background:var(--ink);color:#fff;border-radius:12px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.keygen h3{font-family:"Songti SC",serif;font-size:17px;font-weight:500;white-space:nowrap}
+.keygen input{flex:1;min-width:180px;padding:11px 14px;border:1px solid rgba(255,255,255,.2);border-radius:8px;background:rgba(255,255,255,.08);color:#fff;font-size:13px}
+.keygen input::placeholder{color:rgba(255,255,255,.4)}
+.keygen button{padding:11px 20px;background:var(--gold);color:#fff;border-radius:8px;font-size:13px;font-weight:600;white-space:nowrap}
+.keygen button.test{background:#eee3cc;color:var(--ink)}
+
+.filters{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.filters .f-title{font-family:"Songti SC",serif;font-size:18px;font-weight:500}
+.filters .f-tools{display:flex;gap:8px;flex-wrap:wrap}
+.filters select{padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;background:#fff}
+
+.table-wrap{background:#fff;border-radius:12px;overflow:hidden}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:1000px}
+thead th{background:var(--paper);text-align:left;padding:12px 14px;font-size:12px;color:var(--muted);font-weight:500;border-bottom:1px solid var(--line);white-space:nowrap}
+tbody td{padding:12px 14px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:top}
+tbody tr:hover{background:var(--cream)}
+.td-key{font-weight:700;letter-spacing:.05em;font-family:monospace;font-size:13px}
+.td-remark{display:block;color:var(--muted);font-size:11px;margin-top:3px;font-family:"PingFang SC",sans-serif}
+.badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:11px;background:#e0e8e4;color:var(--jade)}
+.badge.member{background:var(--ink);color:var(--gold)}
+.badge.test{background:#f0e6d0;color:#8a6d3b}
+.badge.unused{background:#e8e8e8;color:var(--muted)}
+.badge.completed{background:#dce9e3;color:var(--jade)}
+.badge.disabled{background:#fce8e6;color:var(--danger)}
+.badge.expired{background:#fce8e6;color:var(--danger)}
+.row-actions{display:flex;gap:5px;flex-wrap:wrap}
+.row-actions button{padding:5px 10px;border:1px solid var(--line);border-radius:6px;font-size:11px;background:#fff;color:var(--jade)}
+.row-actions button:hover{background:var(--paper)}
+.row-actions button.danger{color:var(--danger);border-color:rgba(196,86,78,.3)}
+.row-actions button:disabled{opacity:.4;cursor:not-allowed}
+.readonly-tag{color:#a0aaa6;font-size:11px;font-style:italic}
+.empty-row{text-align:center;padding:40px;color:var(--muted)}
+
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:100;justify-content:center;align-items:flex-start;padding:40px 20px;overflow-y:auto}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:14px;max-width:560px;width:100%;margin:auto}
+.modal-head{padding:18px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.modal-head h3{font-family:"Songti SC",serif;font-size:18px;font-weight:500}
+.modal-head .close{font-size:22px;color:var(--muted);padding:4px 8px}
+.modal-body{padding:24px}
+.modal-foot{padding:16px 24px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end}
+.modal-foot button{padding:9px 20px;border-radius:8px;font-size:13px}
+.modal-foot .btn-cancel{border:1px solid var(--line);background:#fff;color:var(--muted)}
+.modal-foot .btn-ok{background:var(--ink);color:#fff}
+.modal-foot .btn-danger{background:var(--danger);color:#fff}
+.form-field{margin-bottom:16px}
+.form-field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+.form-field input,.form-field select,.form-field textarea{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;font-size:14px}
+.form-field textarea{resize:vertical;min-height:60px}
+
+.detail-key{font-family:monospace;font-size:18px;font-weight:700;letter-spacing:.05em;color:var(--ink);word-break:break-all}
+.detail-info{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.detail-info-item{font-size:13px}
+.detail-info-item label{display:block;color:var(--muted);font-size:11px;margin-bottom:2px}
+.detail-results{margin-top:20px}
+.detail-section-title{font-family:"Songti SC",serif;font-size:15px;font-weight:500;color:var(--ink);margin:20px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.detail-result-item{background:var(--paper);border-radius:10px;padding:16px;margin-bottom:12px}
+.detail-result-item .dr-date{font-size:11px;color:var(--muted);margin-bottom:8px}
+.detail-result-item .dr-type{font-family:"Songti SC",serif;font-size:20px;font-weight:500;margin-bottom:10px}
+.dr-scores{display:grid;gap:5px}
+.dr-score-row{display:grid;grid-template-columns:56px 1fr 28px;gap:6px;align-items:center;font-size:11px}
+.dr-score-bar{height:4px;background:#d0ccc1;border-radius:2px;overflow:hidden}
+.dr-score-bar b{display:block;height:100%;border-radius:2px}
+.dr-vitality-info{font-size:12px;color:#51635d;margin-top:8px;line-height:1.7}
+.dr-vitality-info b{color:var(--ink)}
+
+.sub-grid{display:grid;grid-template-columns:340px 1fr;gap:20px}
+.sub-add{background:#fff;border-top:3px solid var(--gold);border-radius:12px;padding:24px}
+.sub-add h3{font-family:"Songti SC",serif;font-size:18px;font-weight:500;margin-bottom:4px}
+.sub-add .eyebrow{font-size:11px;letter-spacing:.15em;color:var(--gold);margin-bottom:4px}
+.sub-add .form-field{margin-top:14px}
+.sub-add .btn-add{width:100%;padding:12px;background:var(--ink);color:#fff;border-radius:10px;font-size:14px;font-weight:600;margin-top:8px}
+.sub-add .hint{font-size:11px;color:var(--muted);margin-top:8px}
+.sub-list{display:flex;flex-direction:column;gap:14px}
+.sub-card{background:#fff;border-radius:12px;padding:20px}
+.sub-card .sc-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px}
+.sub-card .sc-name{font-family:"Songti SC",serif;font-size:18px;font-weight:500}
+.sub-card .sc-account{font-size:12px;color:var(--muted);margin-top:2px}
+.sub-card .sc-status{font-size:11px;color:var(--muted);margin-top:4px}
+.sub-card .sc-actions{display:flex;gap:6px;flex-wrap:wrap}
+.sub-card .sc-actions button{padding:6px 12px;border:1px solid var(--line);border-radius:6px;font-size:12px;background:#fff;color:var(--jade)}
+.sub-card .sc-actions button.danger{color:var(--danger)}
+.sub-card .sc-actions button:disabled{opacity:.4}
+.sub-card .sc-logs{border-top:1px solid var(--line);margin-top:14px;padding-top:14px}
+.sub-card .sc-logs b{font-size:12px;color:var(--muted)}
+.sub-card .sc-logs p{font-size:12px;color:#51635d;margin:6px 0}
+.sub-card .sc-logs .sc-summary{font-weight:600;color:var(--ink);margin-top:8px}
+
+.nickname-bar{background:#fff;border-radius:10px;padding:14px 20px;margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.nickname-bar label{font-size:13px;color:var(--muted)}
+.nickname-bar input{padding:8px 12px;border:1.5px solid var(--line);border-radius:8px;font-size:14px;min-width:160px}
+.nickname-bar button{padding:8px 18px;background:var(--ink);color:#fff;border-radius:8px;font-size:13px}
+
+.pwd-show{background:var(--paper);border-radius:10px;padding:16px;text-align:center;margin:14px 0}
+.pwd-show label{font-size:11px;color:var(--muted);display:block;margin-bottom:6px}
+.pwd-show .pwd{font-family:monospace;font-size:20px;font-weight:700;color:var(--ink);letter-spacing:.1em}
+.pwd-show .copy-btn{margin-top:10px;padding:6px 16px;border:1px solid var(--line);border-radius:6px;font-size:12px}
+
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 24px;border-radius:10px;font-size:13px;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+
+.loading-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,.7);display:none;justify-content:center;align-items:center;z-index:300}
+.loading-overlay.show{display:flex}
+.loading-overlay .spinner{width:36px;height:36px;border:3px solid var(--line);border-top-color:var(--jade);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* 管理端移动端 */
+@media(max-width:768px){
+  .admin-top{padding:8px 12px;flex-direction:column;gap:8px;align-items:stretch}
+  .admin-top .a-left{justify-content:center}
+  .admin-top .a-right{justify-content:space-between;flex-wrap:wrap;gap:6px}
+  .admin-top .a-user{font-size:12px}
+  .admin-nav{gap:4px;flex-wrap:wrap}
+  .admin-nav button{padding:6px 10px;font-size:12px}
+  .admin-content{padding:12px}
+  .dashboard{padding:16px}
+  .dash-head{flex-direction:column;align-items:stretch;gap:10px}
+  .dash-title{font-size:18px}
+  .dash-dates{flex-direction:column;gap:8px}
+  .dash-dates input{width:100%}
+  .dash-presets{flex-wrap:wrap;gap:4px}
+  .dash-presets button{padding:5px 10px;font-size:11px}
+  .dash-metrics{grid-template-columns:1fr 1fr;gap:8px}
+  .dash-metric{padding:14px}
+  .dash-metric strong{font-size:24px}
+  .keygen{flex-direction:column;align-items:stretch;gap:10px;padding:16px}
+  .keygen h3{font-size:15px}
+  .keygen input{min-width:auto;width:100%}
+  .keygen button{width:100%;padding:12px;font-size:14px}
+  .filters{flex-direction:column;align-items:stretch;gap:8px}
+  .f-title{font-size:16px}
+  .f-tools{flex-direction:column;gap:6px}
+  .filters select,.filters input[type=text]{width:100%!important}
+  .table-wrap{border-radius:10px;overflow:visible}
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{font-size:13px;min-width:700px}
+  thead th,tbody td{padding:10px 8px}
+  .td-key{font-size:12px}
+  .row-actions{gap:4px}
+  .row-actions button{padding:5px 8px;font-size:10px}
+  .modal-overlay{padding:0;align-items:flex-end}
+  .modal{border-radius:14px 14px 0 0;max-width:100%;max-height:90vh;overflow-y:auto}
+  .modal-head{padding:14px 16px}
+  .modal-head h3{font-size:16px}
+  .modal-body{padding:16px}
+  .modal-foot{padding:12px 16px}
+  .modal-foot button{padding:10px 16px;font-size:13px;flex:1}
+  .sub-grid{grid-template-columns:1fr;gap:14px}
+  .sub-add{padding:18px}
+  .sub-card{padding:16px}
+  .sc-name{font-size:16px}
+  .sc-actions{gap:4px}
+  .sc-actions button{padding:5px 8px;font-size:11px}
+  .nickname-bar{flex-direction:column;align-items:stretch;gap:8px;padding:12px}
+  .nickname-bar input{width:100%}
+  .nickname-bar button{width:100%}
+  .detail-info{grid-template-columns:1fr}
+  .detail-key{font-size:16px}
+  .pwd-show .pwd{font-size:18px}
+}
+@media(max-width:480px){
+  .dash-metrics{grid-template-columns:1fr 1fr}
+  .admin-nav button{padding:5px 8px;font-size:11px}
+  table{font-size:12px}
+  thead th,tbody td{padding:8px 6px}
+}
+</style>
+</head>
+<body>
+
+<!-- ════ 客户端视图 ════ -->
+<div id="client-view">
+<!-- 全局左上角返回按钮 -->
+<div class="nav-back-btn" id="globalBackBtn" style="display:none" onclick="handleGlobalBack()">‹</div>
+<div id="page-home" class="page active">
+  <div class="home-wrap">
+    <div class="home-top">
+      <div class="home-logo">
+        <div class="diamond"><span>九</span></div>
+        <b>九衡 · 健康测评</b>
+      </div>
+      <p class="home-eyebrow">HEALTH ASSESSMENT</p>
+      <h1 class="home-h1">两项专业测评<br>看懂身体的整体倾向</h1>
+      <p class="home-sub">中医体质辨识 + 健康生活力画像，从体质与生活方式两个维度，认识此刻的你。</p>
+    </div>
+    <div class="home-body">
+      <div class="home-quote"><p>体质可分，养护有方。<br>不追逐一时症状，先理解长久倾向。</p></div>
+      <div id="memberPanel" class="input-group" style="display:none">
+        <div style="background:var(--cream);border-radius:12px;padding:18px;text-align:center;border:1px solid var(--gold)">
+          <p style="font-size:13px;color:var(--gold);margin-bottom:4px">◆ 会员已激活</p>
+          <p style="font-size:12px;color:var(--muted)" id="memberExpiry">—</p>
+        </div>
+        <button class="btn-primary" id="retestHomeBtn" style="background:var(--jade)">进入测评选择</button>
+        <button class="btn-text" id="historyMemberBtn">查看历史测评</button>
+      </div>
+      <div id="keyPanel" class="input-group">
+        <label>输入专属测评密钥</label>
+        <input id="keyInput" type="text" placeholder="示例 JH-7K9M-2Q4X" autocomplete="off" style="text-transform:uppercase">
+        <div id="keyError" class="error-msg"></div>
+        <button class="btn-primary" id="enterBtn">进入测评</button>
+      </div>
+      <button class="btn-text" id="historyBtn">查看历史测评</button>
+      <div class="home-features">
+        <span>一次激活</span><span>专属结果</span><span>隐私存储</span>
+      </div>
+    </div>
+    <div class="home-bottom"><a href="javascript:void(0)" id="adminEntryLink">管理入口</a></div>
+  </div>
+</div>
+
+<!-- 测评选择页 -->
+<div id="page-select" class="page">
+  <div class="select-wrap">
+    <div class="select-top home-top">
+      <div class="home-logo">
+        <div class="diamond"><span>九</span></div>
+        <b>九衡 · 健康测评</b>
+      </div>
+      <p class="home-eyebrow">ASSESSMENT SELECTION</p>
+      <h1 class="home-h1">选择您的<br>测评项目</h1>
+      <p class="home-sub" id="selectKeyInfo">密钥：—</p>
+    </div>
+    <div class="select-body">
+      <div class="select-card" id="card-constitution">
+        <div class="select-card-top">
+          <span class="sc-num">01</span>
+          <span class="sc-tag" id="constitutionTag"></span>
+        </div>
+        <h2 class="sc-title">中医体质辨识</h2>
+        <p class="sc-desc">从体质出发，读懂身体的倾向</p>
+        <p class="sc-features">9种体质 · 约5分钟 · 依据 GB/T 46939-2025</p>
+        <button class="sc-btn" id="constitutionStartBtn">开始测评 →</button>
+      </div>
+      <div class="select-card" id="card-vitality">
+        <div class="select-card-top">
+          <span class="sc-num">02</span>
+          <span class="sc-tag" id="vitalityTag"></span>
+        </div>
+        <h2 class="sc-title">健康生活力画像</h2>
+        <p class="sc-desc">你的健康生活力，是多少分？</p>
+        <p class="sc-features">6维分析 · 约2分钟 · 非疾病诊断</p>
+        <button class="sc-btn" id="vitalityStartBtn">开始测评 →</button>
+      </div>
+      <button class="btn-text" id="selectHistoryBtn">查看历史测评</button>
+    </div>
+    <div class="select-bottom">
+      <button class="btn-text" id="selectHomeBtn">返回首页</button>
+    </div>
+  </div>
+</div>
+
+<!-- 体质测评页 -->
+<div id="page-quiz" class="page">
+  <div class="quiz-top"><span class="q-logo">九衡</span><span class="q-counter" id="quizCounter">第 1 / 27 题</span></div>
+  <div class="quiz-progress"><b id="quizProgress" style="width:0%"></b></div>
+  <div class="quiz-body" id="quizBody"></div>
+  <div class="quiz-nav">
+    <button class="btn-prev" id="prevBtn">上一题</button>
+    <button class="btn-next" id="nextBtn">下一题</button>
+  </div>
+</div>
+
+<div id="page-result" class="page"></div>
+
+<!-- 生活力画像：前置问卷 -->
+<div id="page-vitality-profile" class="page">
+  <div class="quiz-top"><span class="q-logo">九衡</span><span class="q-counter">01 / 03</span></div>
+  <div class="quiz-progress"><b style="width:33%"></b></div>
+  <div class="quiz-body" style="padding-bottom:120px">
+    <div class="quiz-no">先认识此刻的你</div>
+    <div class="quiz-question" style="min-height:auto;font-size:20px;margin-bottom:20px">几个问题，让画像更贴近你的生活</div>
+    <div id="vProfileBlocks"></div>
+  </div>
+  <div class="quiz-nav">
+    <button class="btn-prev" id="vProfileBackBtn">返回</button>
+    <button class="btn-next" id="vProfileNextBtn" disabled="">进入六维测评 →</button>
+  </div>
+</div>
+
+<!-- 生活力画像：24题测评 -->
+<div id="page-vitality-quiz" class="page">
+  <div class="quiz-top"><span class="q-logo">九衡</span><span class="q-counter" id="vQuizCounter">02 / 03 · 第 1 / 24 题</span></div>
+  <div class="quiz-progress"><b id="vQuizProgress" style="width:0%"></b></div>
+  <div style="padding:12px 20px 0">
+    <div id="vDims" class="v-dims"></div>
+  </div>
+  <div class="quiz-body" id="vQuizBody"></div>
+  <div class="quiz-nav">
+    <button class="btn-prev" id="vPrevBtn">上一题</button>
+    <button class="btn-next" id="vNextBtn">下一题</button>
+  </div>
+</div>
+
+<!-- 生活力画像：目标选择 -->
+<div id="page-vitality-goal" class="page">
+  <div class="quiz-top"><span class="q-logo">九衡</span><span class="q-counter">03 / 03</span></div>
+  <div class="quiz-progress"><b style="width:100%"></b></div>
+  <div class="quiz-body" style="padding-bottom:120px">
+    <div class="quiz-no">最后一步</div>
+    <div class="quiz-question" style="min-height:auto">如果只能先改善一件事，<br>你最希望是什么？</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px">请选择一个你真正愿意开始的目标。</p>
+    <div id="vGoalList" class="v-goal-list"></div>
+  </div>
+  <div class="quiz-nav">
+    <button class="btn-prev" id="vGoalBackBtn">上一题</button>
+    <button class="btn-next" id="vGoalNextBtn" disabled="">生成我的健康生活力画像 →</button>
+  </div>
+</div>
+
+<div id="page-vitality-result" class="page"></div>
+
+<!-- 历史页 -->
+<div id="page-history" class="page">
+  <div class="history-top"><p class="eyebrow">HISTORY</p><h1>历史测评记录</h1></div>
+  <div class="history-body" id="historyBody"></div>
+  <div style="padding:0 20px 40px"><button class="btn-primary" id="backHomeBtn" style="width:100%">返回首页</button></div>
+</div>
+</div>
+
+<!-- ════ 管理端视图 ════ -->
+<div id="admin-view">
+<div id="loginPage" class="login-wrap">
+  <div class="login-box">
+    <div class="login-logo"><div class="diamond"><span>九</span></div><b>九衡 · 管理后台</b></div>
+    <h2>管理员登录</h2>
+    <p class="sub">九衡健康测评管理平台</p>
+    <div class="login-field"><label>账号</label><input id="loginUser" type="text" placeholder="请输入账号" autocomplete="off"></div>
+    <div class="login-field"><label>密码</label><input id="loginPass" type="password" placeholder="请输入密码"></div>
+    <button class="login-btn" id="loginBtn">登录</button>
+    <div id="loginError" class="login-error"></div>
+    <div class="login-back"><a href="javascript:void(0)" id="backToClientLink">返回客户端</a></div>
+  </div>
+</div>
+
+<div id="adminWrap" class="admin-wrap">
+  <div class="admin-top">
+    <div class="a-left"><div class="a-logo"><div class="diamond"><span>九</span></div><b>九衡 · 管理后台</b></div></div>
+    <div class="a-right">
+      <div class="a-user">当前：<b id="adminName">—</b> <span id="adminRole">—</span></div>
+      <nav class="admin-nav" id="adminNav">
+        <button class="active" data-tab="keys">密钥管理</button>
+        <button data-tab="subadmins" id="subAdminTabBtn" style="display:none">子管理员管理</button>
+        <button id="changePwdBtn" style="display:none">修改密码</button>
+        <button class="logout" id="logoutBtn">退出</button>
+      </nav>
+    </div>
+  </div>
+
+  <div id="tab-keys" class="admin-content" style="display:block">
+    <div id="nicknameBar" class="nickname-bar" style="display:none">
+      <label>我的昵称</label>
+      <input id="nicknameInput" type="text" placeholder="设置显示昵称">
+      <button id="saveNicknameBtn">保存昵称</button>
+    </div>
+    <div class="dashboard">
+      <div class="dash-head">
+        <div><div class="dash-eyebrow">DATA DASHBOARD</div><div class="dash-title" id="dashTitle">数据看板</div></div>
+        <div class="dash-dates">
+          <div><label>开始日期</label><input type="date" id="dateStart"></div>
+          <div><label>结束日期</label><input type="date" id="dateEnd"></div>
+        </div>
+      </div>
+      <div class="dash-presets">
+        <button data-preset="today">今天</button>
+        <button data-preset="yesterday">昨天</button>
+        <button data-preset="week" class="active">近7天</button>
+        <button data-preset="month">本月</button>
+      </div>
+      <div class="dash-metrics">
+        <div class="dash-metric"><strong id="metricGen">0</strong><span>生成密钥数</span></div>
+        <div class="dash-metric"><strong id="metricUnlock">0</strong><span>解锁会员数</span></div>
+        <div class="dash-metric"><strong id="metricCompleted">0</strong><span>已完成测评</span></div>
+        <div class="dash-metric"><strong id="metricTest">0</strong><span>测试密钥数</span></div>
+      </div>
+    </div>
+    <div class="keygen">
+      <h3>生成专属测评密钥</h3>
+      <input id="genRemark" type="text" placeholder="内部备注（可选）">
+      <button id="genKeyBtn">生成密钥</button>
+      <button id="genTestKeyBtn" class="test" style="display:none">生成测试密钥</button>
+    </div>
+    <div class="filters">
+      <div class="f-title">密钥列表</div>
+      <div class="f-tools">
+        <select id="filterAdmin"><option value="">全部管理员</option></select>
+        <select id="filterStatus">
+          <option value="">全部状态</option>
+          <option value="unused">未使用</option>
+          <option value="completed">已完成</option>
+          <option value="disabled">已停用</option>
+          <option value="member">已解锁会员</option>
+          <option value="test">测试密钥</option>
+        </select>
+        <input type="text" id="filterSearch" placeholder="搜索密钥/备注" style="padding:8px 12px;border:1px solid var(--line);border-radius:8px;font-size:13px;width:140px">
+      </div>
+    </div>
+    <div class="table-wrap"><div class="table-scroll">
+      <table>
+        <thead><tr><th>密钥 / 备注</th><th>创建管理员</th><th>体质状态</th><th>生活力状态</th><th>会员权限</th><th>设备绑定</th><th>体质结果</th><th>生活力结果</th><th>创建时间</th><th>操作</th></tr></thead>
+        <tbody id="keyTableBody"></tbody>
+      </table>
+    </div></div>
+  </div>
+
+  <div id="tab-subadmins" class="admin-content" style="display:none">
+    <div class="sub-grid">
+      <div class="sub-add">
+        <div class="eyebrow">ADD SUB-ADMIN</div>
+        <h3>新增子管理员</h3>
+        <div class="form-field"><label>登录账号（英文）</label><input id="subAccount" type="text" placeholder="如 xiaolin"></div>
+        <div class="form-field"><label>显示昵称</label><input id="subNickname" type="text" placeholder="如 小林"></div>
+        <div class="form-field"><label>每日生成密钥上限</label><input id="subDailyLimit" type="number" value="20" min="1"></div>
+        <button class="btn-add" id="addSubBtn">新增并生成密码</button>
+        <p class="hint">新增成功后显示一次初始密码，请复制后单独发送给子管理员。</p>
+      </div>
+      <div>
+        <!-- 搜索筛选栏 -->
+        <div class="sub-filter-bar">
+          <div class="sf-row">
+            <div class="sf-field">
+              <label>搜索（账号或昵称）</label>
+              <input id="subSearchInput" type="text" placeholder="输入账号或昵称关键词">
+            </div>
+            <div class="sf-field">
+              <label>操作类型</label>
+              <select id="subOpTypeFilter">
+                <option value="">全部操作</option>
+                <option value="生成密钥">生成密钥</option>
+                <option value="解锁会员">解锁会员</option>
+                <option value="停用密钥">停用密钥</option>
+                <option value="恢复密钥">恢复密钥</option>
+                <option value="添加备注">添加备注</option>
+              </select>
+            </div>
+            <div class="sf-field">
+              <label>时间范围</label>
+              <select id="subDateFilter">
+                <option value="">全部时间</option>
+                <option value="today">今天</option>
+                <option value="week">近7天</option>
+                <option value="month">近30天</option>
+              </select>
+            </div>
+            <div class="sf-field">
+              <label>状态</label>
+              <select id="subStatusFilter">
+                <option value="">全部状态</option>
+                <option value="normal">正常</option>
+                <option value="frozen">已冻结</option>
+              </select>
+            </div>
+          </div>
+          <div class="sf-btns">
+            <button id="subFilterBtn">筛选</button>
+            <button class="reset" id="subResetBtn">重置</button>
+          </div>
+        </div>
+        <div class="sub-list" id="subAdminList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modalOverlay" class="modal-overlay"><div class="modal" id="modalBox"></div></div>
+</div>
+
+<div id="toast" class="toast"></div>
+<div id="loadingOverlay" class="loading-overlay"><div class="spinner"></div></div>
+
+<script>
+/* ════ 内联数据（体质类型、题目、评分、详细数据） ════ */
+const CONSTITUTION_TYPES={
+  pinghe:{name:'平和质',code:'A',color:'#5b8c5a'},qixu:{name:'气虚质',code:'B',color:'#c19a6b'},
+  yangxu:{name:'阳虚质',code:'C',color:'#4a90b8'},yinxu:{name:'阴虚质',code:'D',color:'#b85c5c'},
+  tanxu:{name:'痰湿质',code:'E',color:'#8b7355'},shire:{name:'湿热质',code:'F',color:'#d4885e'},
+  xueyu:{name:'血瘀质',code:'G',color:'#8b4a6b'},qiyu:{name:'气郁质',code:'H',color:'#6b5b95'},
+  tebing:{name:'特禀质',code:'I',color:'#5a9b8e'}
+};
+const QUESTIONS=[
+  {id:1,text:'您精力充沛吗？',types:[{t:'pinghe',r:false}]},
+  {id:2,text:'您容易疲乏吗？',types:[{t:'pinghe',r:true},{t:'qixu',r:false}]},
+  {id:3,text:'您感到闷闷不乐、情绪低沉吗？',types:[{t:'pinghe',r:true},{t:'qiyu',r:false}]},
+  {id:4,text:'您比一般人耐受不了寒冷（冬天的寒冷、夏天的冷空调、电扇等）吗？',types:[{t:'pinghe',r:true},{t:'yangxu',r:false}]},
+  {id:5,text:'您容易气短（呼吸短促，接不上气）吗？',types:[{t:'qixu',r:false}]},
+  {id:6,text:'您容易心慌吗？',types:[{t:'qixu',r:false}]},
+  {id:7,text:'您胃脘部、背部或腰膝部怕冷吗？',types:[{t:'yangxu',r:false}]},
+  {id:8,text:'您感到怕冷、衣服比别人穿得多吗？',types:[{t:'yangxu',r:false}]},
+  {id:9,text:'您感觉身体、脸上发热吗？',types:[{t:'yinxu',r:false}]},
+  {id:10,text:'您皮肤或口唇干吗？',types:[{t:'yinxu',r:false}]},
+  {id:11,text:'您面部两颧潮红或偏红吗？',types:[{t:'yinxu',r:false}]},
+  {id:12,text:'您感到身体沉重不轻松或不爽快吗？',types:[{t:'tanxu',r:false}]},
+  {id:13,text:'您腹部肥满松软吗？',types:[{t:'tanxu',r:false}]},
+  {id:14,text:'您嘴里有黏黏的感觉吗？',types:[{t:'tanxu',r:false}]},
+  {id:15,text:'您面部或鼻部有油腻感或者油亮发光吗？',types:[{t:'shire',r:false}]},
+  {id:16,text:'您小便时尿道有发热感、尿色浓（深）吗？',types:[{t:'shire',r:false}]},
+  {id:17,text:'您带下色黄（白带颜色发黄）吗？',types:[{t:'shire',r:false}],gender:'female'},
+  {id:18,text:'您的阴囊部位潮湿吗？',types:[{t:'shire',r:false}],gender:'male'},
+  {id:19,text:'您身体上有哪里疼痛吗？',types:[{t:'xueyu',r:false}]},
+  {id:20,text:'您面色晦暗或容易出现褐斑吗？',types:[{t:'xueyu',r:false}]},
+  {id:21,text:'您口唇颜色偏暗吗？',types:[{t:'xueyu',r:false}]},
+  {id:22,text:'您容易精神紧张、焦虑不安吗？',types:[{t:'qiyu',r:false}]},
+  {id:23,text:'您多愁善感、感情脆弱吗？',types:[{t:'qiyu',r:false}]},
+  {id:24,text:'您没有感冒时也会打喷嚏吗？',types:[{t:'tebing',r:false}]},
+  {id:25,text:'您容易过敏（对药物、食物、气味、花粉或在季节交替、气候变化时）吗？',types:[{t:'tebing',r:false}]},
+  {id:26,text:'您的皮肤容易起荨麻疹（风团、风疹块、风疙瘩）吗？',types:[{t:'tebing',r:false}]},
+  {id:27,text:'您的皮肤一抓就红，并出现抓痕吗？',types:[{t:'tebing',r:false}]}
+];
+const SCALE_OPTIONS=[
+  {label:'没有',sub:'根本不',value:1},{label:'很少',sub:'有一点',value:2},
+  {label:'有时',sub:'有些',value:3},{label:'经常',sub:'相当',value:4},
+  {label:'总是',sub:'非常',value:5}
+];
+
+/* ════ 生活力画像数据 ════ */
+const VITALITY_DIMS=['饮食质量','营养均衡','睡眠恢复','运动活力','日间精力','健康习惯'];
+const VITALITY_SHORT=['饮食','营养','睡眠','活动','精力','习惯'];
+const VITALITY_QUESTIONS=[
+  {dim:0,text:'过去一周，你有几天在7:30—8:30吃早餐？',options:['0—1天','2—3天','4—5天','几乎每天']},
+  {dim:0,text:'你是否会因为忙碌而推迟或省略正餐？',options:['经常如此','每周几次','偶尔发生','基本不会']},
+  {dim:0,text:'你一天通常能吃到多少类不同食物？',options:['3类以内','4—6类','7—9类','10类以上']},
+  {dim:0,text:'一周有多少餐主要来自外卖或高度加工食品？',options:['10餐以上','6—9餐','3—5餐','0—2餐']},
+  {dim:1,text:'每天是否有蛋、奶、豆或鱼禽肉等蛋白质来源？',options:['很少有','偶尔有','多数餐有','每天都有']},
+  {dim:1,text:'你每天吃新鲜蔬菜的情况是？',options:['几乎不吃','偶尔吃一些','每餐都有一些','每餐都吃得较多']},
+  {dim:1,text:'你吃水果的频率通常是？',options:['很少','每周1—2次','每周3—5次','几乎每天']},
+  {dim:1,text:'你是否常用咖啡、甜饮或零食代替正餐？',options:['经常','每周几次','偶尔','基本不会']},
+  {dim:2,text:'你最近一周平均每天睡多久？',options:['少于5小时','5—6小时','6—7小时','7—8小时']},
+  {dim:2,text:'你的入睡和起床时间规律吗？',options:['非常不规律','经常熬夜','偶尔变化','大致固定']},
+  {dim:2,text:'起床后，你通常是什么感觉？',options:['很难恢复状态','明显疲惫','稍微困倦','精神很好']},
+  {dim:2,text:'白天是否容易犯困或注意力下降？',options:['几乎每天','经常','偶尔','很少']},
+  {dim:3,text:'你一周会主动运动几次？',options:['几乎没有','1次','2—3次','4次及以上']},
+  {dim:3,text:'你每天累计步行或中等强度活动多久？',options:['少于10分钟','10—20分钟','20—40分钟','40分钟以上']},
+  {dim:3,text:'你会连续坐超过90分钟吗？',options:['经常','每天几次','偶尔','基本不会']},
+  {dim:3,text:'快走或爬楼后，你的恢复情况如何？',options:['恢复很慢','需要较久','稍作休息即可','很快恢复']},
+  {dim:4,text:'你上午的精神状态通常如何？',options:['经常疲惫','偶尔疲惫','基本正常','精力充沛']},
+  {dim:4,text:'下午是否容易明显困倦或注意力下降？',options:['几乎每天','经常','偶尔','很少']},
+  {dim:4,text:'工作或家务结束后，你通常多久能恢复？',options:['到第二天仍累','需要数小时','休息一会儿','很快恢复']},
+  {dim:4,text:'最近一周，你对自己的平均精力满意吗？',options:['很不满意','有些不足','基本满意','非常满意']},
+  {dim:5,text:'你每天的饮水情况如何？',options:['经常忘记','偏少','基本充足','规律且充足']},
+  {dim:5,text:'每天接触户外自然光的时间通常是？',options:['几乎没有','少于15分钟','15—30分钟','30分钟以上']},
+  {dim:5,text:'压力较大时，你有稳定的恢复方式吗？',options:['没有','偶尔尝试','有一两种','有且经常使用']},
+  {dim:5,text:'你会记录步数、睡眠、饮食或体重吗？',options:['从不','偶尔','阶段性记录','持续记录']}
+];
+const VITALITY_PROFILE=[
+  {question:'你的年龄段',options:['18—29','30—39','40—49','50—59','60+'],max:1},
+  {question:'目前最想改善哪些方面？',options:['日常精力','饮食规律','营养均衡','体重管理','睡眠恢复','运动习惯','久坐问题','身体轻盈感','延缓衰老','皮肤气色','骨骼与关节','家庭健康管理'],max:3},
+  {question:'你觉得自己目前整体健康状态如何？',options:['很好','还不错','一般','有一些地方想改善','不知道从哪里开始'],max:1},
+  {question:'你希望通过健康管理获得什么？',options:['看懂身体状态','找到生活方式问题','获得可执行方案','获得专业指导','建立长期习惯'],max:1},
+  {question:'你每月愿意为健康管理投入的范围是？',options:['1,000元以内','1,000—3,000元','3,000—5,000元','5,000元以上'],max:1},
+  {question:'健康是长期的事，你是否有持续投入的意愿？',options:['有，愿意为长期健康持续投入','有意愿，想先从小额开始尝试','不确定，取决于效果','暂未考虑持续投入'],max:1}
+];
+const VITALITY_GOALS=['让每天更有精力','让早餐更规律','改善体重状态','提高饮食质量','改善睡眠恢复','建立运动习惯','延缓衰老进程','改善皮肤气色','保持年轻活力'];
+const VITALITY_EXPLAIN=[
+  '三餐规律与食物丰富度仍有调整空间，先稳定一天中的一餐更容易坚持。',
+  '蛋白质来源和食物多样性值得继续观察，问卷不代表具体营养素缺乏。',
+  '睡眠时长、规律性或起床状态存在优化空间，可能影响白天精力。',
+  '日常活动频率偏少或久坐较长，更适合先增加低强度活动。',
+  '一天中的精力波动较明显，可结合睡眠与进餐节奏共同理解。',
+  '饮水、户外活动与压力恢复可以成为建立长期健康节奏的入口。'
+];
+
+const VITALITY_DETAIL={
+  // 每个维度根据分数级别(低<50/中50-75/高>75)提供不同详细分析
+  dims:[
+    {
+      // 0: 饮食质量
+      low:{
+        title:'饮食质量：建立规律是第一优先',
+        analysis:'当前饮食规律性和食物多样性均有较大改善空间。不规律进餐会影响血糖稳定和消化节律，长期可能导致精力波动和营养摄入不均衡。建议从固定一餐开始，逐步建立饮食节奏。',
+        points:['先固定早餐时间：每天7:30—8:30吃早餐，即使只是简单的一份粥或一个鸡蛋','减少外卖频次：每周设定2-3天自己准备餐食，从简单食材开始','增加食物种类：每天尝试吃到至少5种不同颜色的食物','记录饮食：用手机拍照记录每天三餐，持续一周观察规律'],
+        detail:'饮食质量的改善不需要一步到位。研究表明，即使只固定早餐这一餐，也能显著改善全天的血糖稳定性和精力水平。关键是建立"到点就吃"的节律，而非追求每餐完美。'
+      },
+      mid:{
+        title:'饮食质量：在稳定基础上丰富种类',
+        analysis:'已有一定的饮食规律基础，但食物多样性和外卖控制仍有优化空间。当前阶段适合在保持规律的同时，逐步增加食物种类、减少加工食品比例。',
+        points:['每周增加2-3种新食材：尝试不同颜色的蔬菜和全谷物','替代加工食品：用坚果、酸奶替代部分零食和甜饮','关注蛋白质分布：确保每餐都有优质蛋白来源','建立"一汤一菜一主食"的基本餐食结构'],
+        detail:'食物多样性是营养均衡的核心指标。中国膳食指南建议每天摄入12种以上食物、每周25种以上。不需要精确计算，通过"颜色丰富、种类多样"的视觉判断即可。'
+      },
+      high:{
+        title:'饮食质量：保持现有节奏，精细优化',
+        analysis:'饮食规律性和多样性已处于较好水平。当前可以关注更精细的方面，如营养素搭配比例、进餐节奏和消化舒适度。',
+        points:['继续保持规律三餐的良好习惯','关注进餐速度：每餐用时不少于15分钟，充分咀嚼','观察餐后感受：记录哪些食物让身体感觉轻盈或有负担','适当增加全谷物和深色蔬菜比例'],
+        detail:'优秀的饮食质量是健康生活的重要基石。在保持现有习惯的基础上，可以开始关注食物与身体感受的关联，建立个性化的饮食直觉。'
+      }
+    },
+    {
+      // 1: 营养均衡
+      low:{
+        title:'营养均衡：从基础蛋白质和蔬菜开始',
+        analysis:'当前蛋白质摄入和蔬菜水果的量可能不足，这会影响肌肉维持、免疫力和整体代谢。建议优先建立蛋白质和蔬菜的基础摄入习惯。',
+        points:['每天保证一个鸡蛋和一杯奶：最简单的蛋白质基础','每餐至少有半盘蔬菜：午餐和晚餐各一份深色蔬菜','每周吃2-3次鱼或豆制品：补充优质蛋白和Omega-3','用水果替代部分零食：每天1-2份新鲜水果'],
+        detail:'蛋白质不足会导致肌肉量下降、免疫力降低。中国营养学会建议成人每天摄入1-1.2g/kg体重的蛋白质。从"每天一个鸡蛋一杯奶"开始，是最简单有效的第一步。'
+      },
+      mid:{
+        title:'营养均衡：优化蛋白质来源和蔬菜种类',
+        analysis:'蛋白质和蔬果已有一定基础，但种类和搭配仍有提升空间。建议关注蛋白质来源的多样化（动物+植物蛋白）和深色蔬菜的比例。',
+        points:['蛋白质来源多样化：蛋、奶、鱼、禽、豆轮换搭配','每天吃到3种以上颜色的蔬菜：深绿、红、黄、紫搭配','选择全谷物替代部分精米白面：糙米、燕麦、红薯','注意钙的摄入：每天300ml奶制品或等量豆制品'],
+        detail:'营养均衡不是要求精确计算每种营养素，而是通过"多样化"自然实现。食物颜色越丰富，摄入的微量营养素种类就越多。目标是每周吃到25种以上不同食物。'
+      },
+      high:{
+        title:'营养均衡：维持良好水平，关注细节',
+        analysis:'营养摄入已较为均衡，可以开始关注更精细的方面，如微量营养素、膳食纤维和水分摄入的优化。',
+        points:['继续保持多样化的食物选择习惯','关注膳食纤维：每天25-30g，通过全谷物、蔬菜、水果获得','规律饮水：每天1500-1700ml，少量多次','适当关注维生素D和B12的摄入，特别是室内工作者'],
+        detail:'优秀的营养均衡状态是长期健康的基础。在保持现有习惯的同时，建议定期做基础体检，了解具体的营养指标，针对性优化。'
+      }
+    },
+    {
+      // 2: 睡眠恢复
+      low:{
+        title:'睡眠恢复：优先保障时长和规律',
+        analysis:'当前睡眠时长或规律性存在明显不足，这会直接影响白天的精力、注意力和情绪稳定性。睡眠是身体修复和记忆巩固的核心时段，需要优先改善。',
+        points:['设定固定就寝时间：比现在提前30分钟，坚持一周后再提前30分钟','建立睡前仪式：睡前30分钟不看手机，做拉伸或阅读','卧室环境优化：保持黑暗、安静、温度适宜（18-22°C）','避免晚间咖啡因：下午2点后不喝咖啡和浓茶'],
+        detail:'睡眠不足的影响是累积的。研究显示，连续一周每天少睡1小时，认知能力下降程度相当于血液酒精浓度0.1%。改善睡眠的第一步不是"睡更久"，而是"到点就睡"的规律性。'
+      },
+      mid:{
+        title:'睡眠恢复：优化睡眠质量和起床状态',
+        analysis:'睡眠时长已有一定保障，但入睡规律性和起床后的恢复感仍有改善空间。建议关注睡眠质量和入睡效率。',
+        points:['统一起床时间：即使周末也不晚于工作日1小时以上','记录睡眠感受：每天记录入睡时间、醒来次数和起床感受','白天限制午睡：如需午睡不超过20分钟，且在下午3点前','晚间适度运动：散步或轻度拉伸有助于入睡，但避免剧烈运动'],
+        detail:'睡眠质量比时长更重要。规律的作息能帮助身体建立稳定的生物钟，让入睡更快、深睡比例更高。如果躺床20分钟仍未入睡，建议起身做安静的活动，有困意再回床。'
+      },
+      high:{
+        title:'睡眠恢复：保持良好节律，关注深睡质量',
+        analysis:'睡眠规律性和恢复感已处于较好水平。可以进一步关注深睡眠比例、睡眠周期和个体化的最佳睡眠时长。',
+        points:['继续保持规律的作息时间','关注睡眠周期：90分钟为一个周期，尽量在周期末自然醒来','避免睡前大量饮水：减少夜尿对睡眠的打断','定期评估睡眠需求：年龄和季节变化可能影响最佳睡眠时长'],
+        detail:'优秀的睡眠状态是精力和免疫力的基石。建议关注身体信号，找到适合自己的最佳睡眠时长（通常7-9小时），而非追求"8小时"的标准答案。'
+      }
+    },
+    {
+      // 3: 运动活力
+      low:{
+        title:'运动活力：从日常活动开始，不急于运动',
+        analysis:'当前运动频率和日常活动量较低。对于运动基础薄弱的人，不建议直接开始高强度运动，而是先增加日常活动量，建立"动起来"的习惯。',
+        points:['每天增加步行：目标是每天累计步行30分钟，可以分段完成','每坐45分钟起身活动：站立、伸展或走动2-3分钟','选择活动型通勤：提前一站下车步行，或用楼梯代替电梯','家务也是运动：打扫、做饭、园艺都算身体活动'],
+        detail:'WHO建议成人每周至少150分钟中等强度活动，但"从零开始"的关键不是达标，而是建立习惯。研究显示，即使每天只增加10分钟的活动，也能显著改善心血管健康。关键是"每天都动一点"。'
+      },
+      mid:{
+        title:'运动活力：建立规律运动习惯',
+        analysis:'已有一定的活动基础，可以开始建立规律的运动习惯。建议从有氧运动开始，逐步增加频率和强度。',
+        points:['每周3次快走或慢跑：每次20-30分钟，微微出汗即可','增加2次力量训练：使用自身体重（深蹲、俯卧撑、平板支撑）','运动前热身5分钟：原地踏步或关节环绕','记录运动感受：每周记录运动后的身体反馈'],
+        detail:'规律运动的核心是"可持续"而非"高强度"。选择你喜欢的运动方式，比追求"最优运动方案"更重要。微微出汗、能说话但不能唱歌的强度（中等强度）是最适合长期坚持的。'
+      },
+      high:{
+        title:'运动活力：保持运动习惯，关注恢复',
+        analysis:'运动频率和强度已处于较好水平。可以开始关注运动恢复、训练多样化和运动表现的提升。',
+        points:['保持每周3-5次运动习惯，有氧与力量训练结合','关注运动恢复：训练后拉伸10分钟，保证充足蛋白质摄入','增加柔韧性和平衡训练：瑜伽或太极作为补充','定期调整训练计划：每4-6周变化运动方式或强度'],
+        detail:'优秀的运动习惯是长期健康的重要保障。在保持现有水平的基础上，建议关注运动后的恢复质量，避免过度训练。倾听身体信号，适时调整强度。'
+      }
+    },
+    {
+      // 4: 日间精力
+      low:{
+        title:'日间精力：从睡眠和饮食找根源',
+        analysis:'日间精力不足通常是睡眠、饮食和活动三方面综合作用的结果。不建议依赖咖啡因提神，而是从根源改善精力基础。',
+        points:['排查睡眠质量：参照睡眠维度的建议优先改善睡眠','规律进餐稳定血糖：避免长时间空腹导致的精力低谷','上午接触自然光15分钟：帮助调节生物钟，提升日间清醒度','每小时起身活动2分钟：促进血液循环，缓解久坐疲劳'],
+        detail:'精力不是"用不完的电池"，而是可以管理的资源。咖啡因只能暂时掩盖疲劳信号，不能替代睡眠和营养。建议记录一周的精力波动规律（上午/下午/晚间），找到自己的低谷时段并针对性调整。'
+      },
+      mid:{
+        title:'日间精力：优化能量节奏，管理午后低谷',
+        analysis:'精力已有一定基础，但可能存在午后低谷或波动。建议通过调整进餐节奏、活动间歇和压力管理来稳定全天精力。',
+        points:['午餐避免过量碳水：减少米饭面条比例，增加蛋白质和蔬菜','午后10分钟散步：有效缓解午后困倦，比咖啡更持久','工作90分钟休息10分钟：遵循人体自然的注意力周期','管理情绪消耗：焦虑和压力是隐形的精力消耗大户'],
+        detail:'人体的精力遵循约90分钟的 Ultradian 节律。在这个周期末尾感到疲惫是正常的生理信号，而非意志力不足。学会在精力高峰时处理重要任务，在低谷时做简单事务或休息。'
+      },
+      high:{
+        title:'日间精力：保持稳定输出，关注深度专注',
+        analysis:'精力状态已处于较好水平。可以进一步关注精力的质量——深度专注能力和创造性思维的时段管理。',
+        points:['继续保持良好的睡眠和运动习惯','识别个人精力高峰时段：在高峰时安排重要或创造性工作','减少多任务处理：一次专注一件事，减少切换成本','建立"精力缓冲"：在高强度活动后预留恢复时间'],
+        detail:'优秀的精力状态是高效生活和工作的基础。建议进一步探索个人的精力节律，将重要决策和创造性工作安排在精力高峰时段，让精力发挥最大价值。'
+      }
+    },
+    {
+      // 5: 健康习惯
+      low:{
+        title:'健康习惯：从饮水和户外活动开始',
+        analysis:'当前健康习惯的基础较为薄弱。建议从最简单、最容易坚持的2-3个习惯开始，而非试图同时改变所有方面。',
+        points:['每天8杯水：在手机上设置4个饮水提醒（早/午/下午/晚）','每天户外15分钟：午饭后散步是最简单的户外时间','找到一个减压方式：深呼吸、音乐、散步、聊天都算','开始简单记录：每天只记3件事——睡了多久、喝了多少水、走了多少步'],
+        detail:'习惯建立的关键是"小到不可能失败"。不要试图一天改变所有习惯，而是选择一个最简单的开始（比如"每天起床先喝一杯水"），坚持21天后再增加下一个。记录本身就能促进行为改变。'
+      },
+      mid:{
+        title:'健康习惯：建立系统化的健康节奏',
+        analysis:'已有一些健康习惯的雏形，可以开始建立更系统化的日常健康节奏。建议将零散的习惯整合为晨间和晚间例行流程。',
+        points:['建立晨间流程：起床→饮水→简单活动→早餐，形成固定节奏','建立晚间流程：放松→远离屏幕→准备明天→按时就寝','每周一次健康回顾：花10分钟回顾本周的身体感受和习惯执行情况','找到社交支持：和家人朋友分享健康目标，互相督促'],
+        detail:'系统化的健康节奏能减少意志力消耗。当健康行为变成"到点就做"的例行公事，就不再需要每次都做决定。研究表明，有固定晨间流程的人，全天的健康行为执行率高出40%。'
+      },
+      high:{
+        title:'健康习惯：维持良好节奏，持续优化',
+        analysis:'健康习惯已较为系统和稳定。可以开始关注更深层的健康管理——压力管理、情绪调节和长期健康规划。',
+        points:['继续保持规律的健康习惯和记录习惯','深化压力管理：冥想、正念或定期数字断联','建立年度健康计划：包括体检、运动目标和饮食优化方向','关注心理健康：定期自我评估情绪状态，必要时寻求专业支持'],
+        detail:'优秀的健康习惯是长期健康的基石。在保持现有节奏的基础上，建议将视野扩展到心理健康和预防性健康管理，建立全面的健康生活方式。'
+      }
+    }
+  ],
+  
+  // 7天微行动计划
+  microPlan:{
+    title:'7天健康微行动',
+    intro:'基于你的测评结果，以下是为期7天的微行动建议。每天只做一件小事，7天后回顾身体感受的变化。',
+    days:[
+      {day:1,title:'固定一杯晨水',desc:'起床后立即喝一杯温水（约200ml），连续7天。这是最简单的健康启动仪式。'},
+      {day:2,title:'记录三餐时间',desc:'今天只需用手机记录你三餐的进食时间，不需要改变任何饮食习惯。 Awareness is the first step.'},
+      {day:3,title:'午后散步10分钟',desc:'午饭后走出办公室或家门，散步10分钟。如果你已经习惯久坐，这10分钟会带来明显的午后精力提升。'},
+      {day:4,title:'提前15分钟上床',desc:'今晚比平时提前15分钟上床。不需要提前入睡，只是给身体一个"准备休息"的信号。'},
+      {day:5,title:'增加一份蔬菜',desc:'今天的午餐或晚餐增加一份蔬菜（约拳头大小）。可以是凉拌、炒菜或汤中的蔬菜。'},
+      {day:6,title:'每小时起身一次',desc:'设置手机闹钟，每45-60分钟起身活动2分钟。伸展、走动或倒杯水都可以。'},
+      {day:7,title:'回顾与规划',desc:'花10分钟回顾这一周的身体感受变化。哪些改变让你感觉更好？下周想继续保持哪个习惯？'}
+    ]
+  },
+  
+  // 常见误区
+  misconceptions:{
+    title:'健康生活力常见误区',
+    items:[
+      {title:'"必须一步到位才能改善"',desc:'健康改善不是非此即彼的选择。研究表明，即使只改善一个维度10%，整体健康生活力也会显著提升。关键是"开始做"而非"做到完美"。'},
+      {title:'"运动是最重要的健康习惯"',desc:'虽然运动重要，但睡眠和饮食对日常精力的影响往往更大。对于健康基础薄弱的人，先改善睡眠和饮食规律，再增加运动，效果更佳且更安全。'},
+      {title:'"健康生活需要大量时间和金钱"',desc:'最有效的健康改变往往是免费的：规律睡眠、多喝水、增加步行、减少加工食品。微习惯的力量远大于偶尔的"健康突击"。'},
+      {title:'"保健品可以替代健康饮食"',desc:'保健品是"补充"而非"替代"。没有任何保健品能完全复制天然食物中的营养组合。优先通过食物获取营养，仅在确有不足时考虑补充。'}
+    ]
+  },
+  
+  // 安全边界
+  safety:'本测评用于健康教育和生活方式观察，不用于疾病诊断或治疗。如果你出现持续疲劳（超过2周）、不明原因的体重变化、持续睡眠障碍、胸闷心悸、关节疼痛或其他持续不适，请及时就医。如有慢性病、孕期或正在用药，调整饮食和运动计划前请咨询医生或注册营养师。'
+};
+
+/* ============ 体质评分算法 ============ */
+function reverseScore(v){return 6-v;}
+function calculateScores(answers){
+  const rawScores={},itemCounts={};
+  Object.keys(CONSTITUTION_TYPES).forEach(t=>{rawScores[t]=0;itemCounts[t]=0;});
+  QUESTIONS.forEach(q=>{
+    const ans=answers[q.id];if(ans===undefined||ans===null)return;
+    q.types.forEach(({t,r})=>{const score=r?reverseScore(ans):ans;rawScores[t]+=score;itemCounts[t]+=1;});
+  });
+  const transformed={};
+  Object.keys(CONSTITUTION_TYPES).forEach(t=>{
+    const n=itemCounts[t];
+    transformed[t]=n===0?0:Math.round(((rawScores[t]-n)/(n*4))*100);
+  });
+  return transformed;
+}
+function determineConstitution(scores){
+  const pingheScore=scores.pinghe;
+  const otherTypes=Object.keys(scores).filter(t=>t!=='pinghe');
+  const allOthersBelow30=otherTypes.every(t=>scores[t]<30);
+  const allOthersBelow40=otherTypes.every(t=>scores[t]<40);
+  let pingheResult='否';
+  if(pingheScore>=60&&allOthersBelow30)pingheResult='是';
+  else if(pingheScore>=60&&allOthersBelow40)pingheResult='基本是';
+  const biasedResults={};let mainType=null;let mainScore=0;
+  otherTypes.forEach(t=>{
+    const s=scores[t];
+    if(s>=40)biasedResults[t]='是';else if(s>=30)biasedResults[t]='倾向是';else biasedResults[t]='否';
+    if(s>mainScore){mainScore=s;mainType=t;}
+  });
+  const hasBiasedYes=Object.values(biasedResults).some(r=>r==='是');
+  if((pingheResult==='是'||pingheResult==='基本是')&&!hasBiasedYes)mainType='pinghe';
+  const secondaryTypes=otherTypes.filter(t=>t!==mainType&&scores[t]>=30).sort((a,b)=>scores[b]-scores[a]);
+  return{mainType,mainScore:mainType==='pinghe'?pingheScore:mainScore,pingheResult,biasedResults,secondaryTypes,allScores:scores};
+}
+
+/* ============ 生活力评分算法 ============ */
+function calcVitalityScores(answers){
+  const scores=VITALITY_DIMS.map((d,n)=>{
+    let sum=0;
+    for(let i=0;i<4;i++){
+      const a=answers[n*4+i];
+      sum+=(a!==undefined?a:0)*100/3;
+    }
+    return Math.round(sum/4);
+  });
+  const total=Math.round(scores.reduce((a,b)=>a+b)/6);
+  const order=[0,1,2,3,4,5].sort((a,b)=>scores[a]-scores[b]);
+  return{scores,total,order};
+}
+
+/* ════ API 封装 ════ */
+
+/* 设备指纹生成 */
+function getDeviceId(){
+  let id=localStorage.getItem('jh_device_id');
+  if(id)return id;
+  const ua=navigator.userAgent;
+  const screen=window.screen.width+'x'+window.screen.height;
+  const tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'';
+  const lang=navigator.language||'';
+  const plat=navigator.platform||'';
+  const dpr=window.devicePixelRatio||1;
+  const raw=ua+'|'+screen+'|'+tz+'|'+lang+'|'+plat+'|'+dpr;
+  let hash=0;
+  for(let i=0;i<raw.length;i++){
+    hash=((hash<<5)-hash)+raw.charCodeAt(i);
+    hash|=0;
+  }
+  id='dev_'+Math.abs(hash).toString(36)+'_'+Date.now().toString(36).slice(-4);
+  localStorage.setItem('jh_device_id',id);
+  return id;
+}
+
+const API={
+  token:null,
+  async post(url,body){
+    try{
+      const res=await fetch(url,{
+        method:'POST',
+        headers:{'Content-Type':'application/json',...(this.token?{'Authorization':'Bearer '+this.token}:{})},
+        body:JSON.stringify(body||{})
+      });
+      const text=await res.text();
+      try{return JSON.parse(text);}catch{return{error:'服务器返回异常: '+text.substring(0,200)};}
+    }catch(e){return{error:'网络请求失败: '+(e.message||e)};}
+  },
+  async get(url){
+    try{
+      const res=await fetch(url,{headers:{...(this.token?{'Authorization':'Bearer '+this.token}:{})}});
+      const text=await res.text();
+      try{return JSON.parse(text);}catch{return{error:'服务器返回异常: '+text.substring(0,200)};}
+    }catch(e){return{error:'网络请求失败: '+(e.message||e)};}
+  }
+};
+
+/* ════ 体质详细数据 ════ */
+let CONSTITUTION_DATA=null;
+async function loadConstitutionData(){
+  if(CONSTITUTION_DATA)return CONSTITUTION_DATA;
+  try{
+    const res=await fetch('/constitution-data.js');
+    const text=await res.text();
+    CONSTITUTION_DATA=eval(text);
+  }catch(e){
+    console.error('体质数据加载失败',e);
+  }
+  return CONSTITUTION_DATA;
+}
+
+/* ════ 工具 ════ */
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+function showLoading(){document.getElementById('loadingOverlay').classList.add('show');}
+function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show');}
+function showModal(html){
+  const box=document.getElementById('modalBox');
+  const overlay=document.getElementById('modalOverlay');
+  if(!box||!overlay){console.error('modal elements not found');return;}
+  box.innerHTML=html;
+  overlay.classList.add('show');
+}
+function closeModal(){
+  const overlay=document.getElementById('modalOverlay');
+  if(overlay)overlay.classList.remove('show');
+}
+document.getElementById('modalOverlay')?.addEventListener('click',function(e){
+  if(e.target===this)closeModal();
+});
+function formatDate(iso){const d=new Date(iso);return`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
+function dateStr(iso){const d=new Date(iso);return`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;}
+
+/* 统一锁定区域 */
+function renderLockSection(context){
+  const ctx=context||'vitality';
+  if(ctx==='vitality'){
+    return`<div class="lock-section">
+    <div class="lock-icon">🔒</div>
+    <h2>你已经知道"哪里值得关注"<br><em style="color:var(--gold);font-style:normal">下一步，是知道"先从哪里开始"</em></h2>
+    <div class="lock-grid">
+      <div class="lock-item"><b>🔒 体质 × 生活方式综合分析</b><small>九衡健康会员专属</small></div>
+      <div class="lock-item"><b>🔒 个人饮食与早餐安排</b><small>九衡健康会员专属</small></div>
+      <div class="lock-item"><b>🔒 7天健康微行动</b><small>九衡健康会员专属</small></div>
+      <div class="lock-item"><b>🔒 专业人员报告解读</b><small>九衡健康会员专属</small></div>
+      <div class="lock-item"><b>🔒 全部健康测评</b><small>九衡健康会员专属</small></div>
+      <div class="lock-item"><b>🔒 课程、答疑与活动</b><small>九衡健康会员专属</small></div>
+    </div>
+    <div class="lock-offer">
+      <div><b>九衡健康会员</b><h3>¥99.9 <small>/ 30天</small></h3><small>4.9元测评费可抵扣，本次升级 ¥95</small></div>
+      <ul><li>全部测评与详细报告</li><li>每月1次人工解读</li><li>饮食搭配指导</li><li>健康问题答疑</li><li>课程与读书会</li><li>北京线下活动</li></ul>
+    </div>
+    <span class="lock-cta">请联系管理员开通会员权限</span>
+  </div>`;
+  }else{
+    return`<div class="lock-section">
+    <div class="lock-icon">🔒</div>
+    <h2>你已经知道"自己的体质类型"<br><em style="color:var(--gold);font-style:normal">下一步，是知道"怎么针对性调理"</em></h2>
+    <div class="lock-grid">
+      <div class="lock-item"><b>🔒 体质 × 生活方式综合分析</b><small>九衡健康会员专属</small></div>
+      <div class="lock-item"><b>🔒 个人饮食与早餐安排</b><small>九衡健康会员专属</small></div>
+      <div class="lock-item"><b>🔒 7天体质调理微行动</b><small>九衡健康会员专属</small></div>
+      <div class="lock-item"><b>🔒 专业人员报告解读</b><small>九衡健康会员专属</small></div>
+      <div class="lock-item"><b>🔒 全部健康测评</b><small>九衡健康会员专属</small></div>
+      <div class="lock-item"><b>🔒 课程、答疑与活动</b><small>九衡健康会员专属</small></div>
+    </div>
+    <div class="lock-offer">
+      <div><b>九衡健康会员</b><h3>¥99.9 <small>/ 30天</small></h3><small>4.9元测评费可抵扣，本次升级 ¥95</small></div>
+      <ul><li>全部测评与详细报告</li><li>每月1次人工解读</li><li>饮食搭配指导</li><li>健康问题答疑</li><li>课程与读书会</li><li>北京线下活动</li></ul>
+    </div>
+    <span class="lock-cta">请联系管理员开通会员权限</span>
+  </div>`;
+  }
+}
+
+/* ════ 路由 ════ */
+function showClientView(){
+  document.body.classList.remove('admin-active');
+  document.getElementById('client-view').style.display='block';
+  document.getElementById('admin-view').style.display='none';
+}
+function showAdminView(){
+  document.body.classList.add('admin-active');
+  document.getElementById('client-view').style.display='none';
+  document.getElementById('admin-view').style.display='block';
+}
+function handleHashChange(){
+  const h=window.location.hash;
+  if(h==='#admin'||h==='#/admin'||h==='#/admin/'){
+    showAdminView();
+    const token=sessionStorage.getItem('jh_token');
+    if(token){
+      API.token=token;
+      API.get('/api/me').then(r=>{
+        if(r&&!r.error){
+          currentAdmin=r;
+          showAdmin();
+        }
+      });
+    }
+  }else{
+    showClientView();
+  }
+}
+window.addEventListener('hashchange',handleHashChange);
+
+// 管理入口点击事件
+document.getElementById('adminEntryLink').addEventListener('click',function(e){
+  e.preventDefault();
+  showAdminView();
+  const token=sessionStorage.getItem('jh_token');
+  if(token){
+    API.token=token;
+    API.get('/api/me').then(r=>{
+      if(r&&!r.error){
+        currentAdmin=r;
+        showAdmin();
+      }
+    });
+  }
+});
+
+// 返回客户端点击事件
+document.getElementById('backToClientLink').addEventListener('click',function(e){
+  e.preventDefault();
+  window.location.hash='';
+  showClientView();
+});
+
+/* ════════════════════════════════════════
+   客户端逻辑
+═════════════════════════════════════════ */
+let currentKey=null;
+let quizGender=null,quizQuestions=[],quizAnswers={},quizIndex=0;
+let vProfile=[[],[],[],[],[],[]];
+let vAnswers=new Array(24).fill(undefined);
+let vIndex=0;
+let vGoal='';
+
+function showPage(id){
+  document.querySelectorAll('#client-view .page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active','fade-in');
+  window.scrollTo(0,0);
+  updateBackBtn(id);
+}
+
+/* 左上角返回按钮逻辑 */
+const _pageBackMap={
+  'page-select':'page-home',
+  'page-quiz':'page-select',
+  'page-result':'page-select',
+  'page-vitality-profile':'page-select',
+  'page-vitality-quiz':'page-select',
+  'page-vitality-goal':'page-vitality-quiz',
+  'page-vitality-result':'page-select',
+  'page-history':'page-home'
+};
+
+function updateBackBtn(currentPageId){
+  const btn=document.getElementById('globalBackBtn');
+  if(!btn)return;
+  if(currentPageId==='page-home'){
+    btn.style.display='none';
+  }else{
+    btn.style.display='flex';
+    // 所有非首页的页面顶部均为深色背景，使用浅色按钮确保可见
+    btn.classList.add('light');
+  }
+}
+
+function handleGlobalBack(){
+  const activePage=document.querySelector('#client-view .page.active');
+  if(!activePage)return;
+  const pageId=activePage.id;
+  const target=_pageBackMap[pageId];
+  if(!target)return;
+  if(target==='page-home'){
+    if(currentKey&&currentKey.isMember&&(!currentKey.memberExpiresAt||new Date(currentKey.memberExpiresAt)>new Date())){
+      showMemberPanel(currentKey);
+    }
+    showPage('page-home');
+  }else if(target==='page-select'){
+    showSelectPage();
+  }else{
+    showPage(target);
+  }
+}
+
+document.getElementById('enterBtn').addEventListener('click',enterQuiz);
+document.getElementById('keyInput').addEventListener('keypress',e=>{if(e.key==='Enter')enterQuiz();});
+
+async function enterQuiz(){
+  const input=document.getElementById('keyInput').value.trim().toUpperCase();
+  const errEl=document.getElementById('keyError');
+  errEl.classList.remove('show');
+  if(!input){errEl.textContent='请输入密钥';errEl.classList.add('show');return;}
+
+  showLoading();
+  const r=await API.post('/api/keys/validate',{key:input,deviceId:getDeviceId()});
+  hideLoading();
+
+  if(r.error){
+    errEl.textContent=r.error;errEl.classList.add('show');return;
+  }
+  currentKey=r;
+  sessionStorage.setItem('jh_currentKey',r.id);
+
+  if(currentKey.isMember&&currentKey.memberExpiresAt&&new Date(currentKey.memberExpiresAt)>new Date()){
+    showMemberPanel(currentKey);
+    showPage('page-home');
+  }else{
+    showSelectPage();
+  }
+}
+
+/* ── 测评选择页 ── */
+function showSelectPage(){
+  if(!currentKey){showPage('page-home');return;}
+  const isMember=currentKey.isMember&&(!currentKey.memberExpiresAt||new Date(currentKey.memberExpiresAt)>new Date());
+
+  document.getElementById('selectKeyInfo').textContent='密钥：'+currentKey.key;
+
+  // 体质卡片
+  const cDone=!isMember&&(currentKey.status==='completed'||currentKey.hasConstitutionResult);
+  const cTag=document.getElementById('constitutionTag');
+  const cBtn=document.getElementById('constitutionStartBtn');
+  if(cDone){
+    cTag.textContent='已完成';cTag.className='sc-tag done';
+    cBtn.textContent='查看结果 →';cBtn.disabled=false;
+    cBtn.dataset.action='view';
+  }else{
+    cTag.textContent=isMember?'可反复测评':'';cTag.className=isMember?'sc-tag member':'sc-tag';
+    cTag.style.display=isMember?'inline-block':'none';
+    cBtn.textContent='开始测评 →';cBtn.disabled=false;
+    cBtn.dataset.action='start';
+  }
+
+  // 生活力卡片
+  const vDone=!isMember&&(currentKey.vitalityStatus==='completed'||currentKey.hasVitalityResult);
+  const vTag=document.getElementById('vitalityTag');
+  const vBtn=document.getElementById('vitalityStartBtn');
+  if(vDone){
+    vTag.textContent='已完成';vTag.className='sc-tag done';
+    vBtn.textContent='查看结果 →';vBtn.disabled=false;
+    vBtn.dataset.action='view';
+  }else{
+    vTag.textContent=isMember?'可反复测评':'';vTag.className=isMember?'sc-tag member':'sc-tag';
+    vTag.style.display=isMember?'inline-block':'none';
+    vBtn.textContent='开始测评 →';vBtn.disabled=false;
+    vBtn.dataset.action='start';
+  }
+
+  showPage('page-select');
+}
+
+document.getElementById('constitutionStartBtn').addEventListener('click',async()=>{
+  const btn=document.getElementById('constitutionStartBtn');
+  if(btn.disabled)return;
+  if(btn.dataset.action==='view'){
+    showLoading();
+    const r=await API.get(`/api/keys/${currentKey.id}/results`);
+    hideLoading();
+    const results=r.results||[];
+    if(results.length>0){
+      renderResult(results[0]);
+    }else{
+      showToast('暂无测评记录');
+    }
+  }else{
+    startQuiz();
+  }
+});
+document.getElementById('vitalityStartBtn').addEventListener('click',async()=>{
+  const btn=document.getElementById('vitalityStartBtn');
+  if(btn.disabled)return;
+  if(btn.dataset.action==='view'){
+    showLoading();
+    const r=await API.get(`/api/keys/${currentKey.id}/results`);
+    hideLoading();
+    const vResults=r.vitalityResults||[];
+    if(vResults.length>0){
+      renderVitalityResult(vResults[0]);
+    }else{
+      showToast('暂无测评记录');
+    }
+  }else{
+    startVitality();
+  }
+});
+document.getElementById('selectHistoryBtn').addEventListener('click',showHistory);
+document.getElementById('selectHomeBtn').addEventListener('click',()=>{
+  if(currentKey&&currentKey.isMember&&currentKey.memberExpiresAt&&new Date(currentKey.memberExpiresAt)>new Date()){
+    showMemberPanel(currentKey);
+  }
+  showPage('page-home');
+});
+
+/* ════ 体质测评流程 ════ */
+function startQuiz(){
+  quizGender=null;quizAnswers={};quizIndex=0;
+  showPage('page-quiz');renderGenderSelect();
+}
+
+function renderGenderSelect(){
+  document.getElementById('quizCounter').textContent='性别选择';
+  document.getElementById('quizProgress').style.width='0%';
+  document.getElementById('prevBtn').style.visibility='hidden';
+  document.getElementById('nextBtn').style.visibility='hidden';
+  document.getElementById('quizBody').innerHTML=`
+    <div class="quiz-gender fade-in">
+      <div class="quiz-no">START</div>
+      <div class="quiz-question">请选择您的性别</div>
+      <p>部分题目因性别不同有差异，请如实选择</p>
+      <div class="quiz-gender-opts">
+        <button data-gender="male">男性</button>
+        <button data-gender="female">女性</button>
+      </div>
+    </div>`;
+  document.querySelectorAll('.quiz-gender-opts button').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      quizGender=btn.dataset.gender;
+      quizQuestions=QUESTIONS.filter(q=>!q.gender||q.gender===quizGender);
+      quizIndex=0;
+      document.getElementById('prevBtn').style.visibility='visible';
+      document.getElementById('nextBtn').style.visibility='visible';
+      renderQuestion();
+    });
+  });
+}
+
+function renderQuestion(){
+  const q=quizQuestions[quizIndex];const total=quizQuestions.length;
+  document.getElementById('quizCounter').textContent=`第 ${quizIndex+1} / ${total} 题`;
+  document.getElementById('quizProgress').style.width=((quizIndex+1)/total*100)+'%';
+  document.getElementById('prevBtn').style.visibility=quizIndex===0?'hidden':'visible';
+  const selectedVal=quizAnswers[q.id];const isLast=quizIndex===total-1;
+  document.getElementById('quizBody').innerHTML=`
+    <div class="quiz-no slide-in">QUESTION ${String(quizIndex+1).padStart(2,'0')}</div>
+    <div class="quiz-question slide-in">${q.text}</div>
+    <div class="quiz-options slide-in">
+      ${SCALE_OPTIONS.map(opt=>`<div class="quiz-opt ${selectedVal===opt.value?'selected':''}" data-val="${opt.value}"><span class="opt-label">${opt.label}</span><span class="opt-sub">${opt.sub}</span></div>`).join('')}
+    </div>`;
+  document.querySelectorAll('.quiz-opt').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const val=parseInt(el.dataset.val);quizAnswers[q.id]=val;el.classList.add('selected');
+      setTimeout(()=>{if(quizIndex<total-1){quizIndex++;renderQuestion();}else{finishQuiz();}},300);
+    });
+  });
+  const nextBtn=document.getElementById('nextBtn');
+  nextBtn.textContent=isLast?'查看结果':'下一题';
+  nextBtn.disabled=selectedVal===undefined;
+  nextBtn.onclick=()=>{if(selectedVal===undefined)return;if(isLast)finishQuiz();else{quizIndex++;renderQuestion();}};
+  document.getElementById('prevBtn').onclick=()=>{if(quizIndex>0){quizIndex--;renderQuestion();}};
+}
+
+async function finishQuiz(){
+  const scores=calculateScores(quizAnswers);
+  const result=determineConstitution(scores);
+  const resultData={scores,mainType:result.mainType,mainScore:result.mainScore,pingheResult:result.pingheResult,biasedResults:result.biasedResults,secondaryTypes:result.secondaryTypes,gender:quizGender};
+
+  showLoading();
+  await API.post('/api/keys/result',{keyId:currentKey.id,...resultData});
+  const updated=await API.post('/api/keys/validate',{key:currentKey.key,deviceId:getDeviceId()});
+  if(!updated.error)currentKey=updated;
+  hideLoading();
+
+  renderResult(resultData);
+}
+
+async function renderResult(data){
+  const cdata=await loadConstitutionData();
+  const ctype=cdata?cdata[data.mainType]:null;
+  const isMember=currentKey.isMember&&(!currentKey.memberExpiresAt||new Date(currentKey.memberExpiresAt)>new Date());
+  const scores=data.allScores||data.scores;
+  const sortedScores=Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+  const maxScore=Math.max(...sortedScores.map(s=>s[1]),1);
+
+  let html=`
+  <div class="result-hero">
+    <p class="eyebrow">您的体质辨识结果 · ${isMember?'会员详细版':'基础版'}</p>
+    <h1>${CONSTITUTION_TYPES[data.mainType].name}</h1>
+    <p class="summary">${ctype?ctype.heroDesc:CONSTITUTION_TYPES[data.mainType].name}</p>
+  </div>
+  <div class="result-section">
+    <p class="section-no">01 / ${isMember?'深度体质解读':'体质简析'}</p>
+    <h2>${isMember?'不仅告诉您"是什么"，还要说明"为什么"':'了解这种体质的成因与常见现象'}</h2>
+    <p class="intro">${ctype?ctype.summary+(isMember?' '+ctype.formation.detail:''):''}</p>
+  </div>
+  <div class="scores-card">
+    <p class="section-no">02 / 九种体质得分</p>
+    ${sortedScores.map(([type,score])=>{const t=CONSTITUTION_TYPES[type];const isMain=type===data.mainType;return`<div class="score-row"><span style="color:${isMain?'var(--ink)':'var(--muted)'};font-weight:${isMain?'700':'400'}">${t.name}</span><div class="score-bar"><b style="width:${score/maxScore*100}%;background:${isMain?'var(--ink)':'var(--jade)'}"></b></div><strong style="color:${isMain?'var(--ink)':'var(--muted)'}">${score}</strong></div>`;}).join('')}
+    ${data.secondaryTypes.length>0?`<p class="score-secondary">兼有倾向：${data.secondaryTypes.map(t=>CONSTITUTION_TYPES[t].name).join('、')}</p>`:''}
+    ${data.pingheResult!=='否'?`<p class="score-secondary">平和质判定：${data.pingheResult}</p>`:''}
+  </div>`;
+
+  if(!isMember){
+    // 致每一位关注健康的你
+    html+=`
+    <div class="v-dedication">
+      <p class="section-no" style="text-align:center">A MESSAGE FOR YOU</p>
+      <h2>致每一位关注健康的你</h2>
+      <div class="v-dedication-body">
+        <p>世界卫生组织的研究表明：<b>预防是最具成本效益的健康干预方式</b>。达到同等健康目标，预防投入、治疗费用与抢救费用的比例约为 <b>1∶8.5∶100</b>——即在预防上每多投入 <b>1元</b>，就可减少 <b>8.5元</b> 的治疗支出，并省下 <b>100元</b> 的抢救费用。</p>
+        <p>健康从来不是等出了问题才补救。与其等到身体发出警报，不如从今天开始，多一分预防意识，少十分被动就医。关注身体发出的每一个信号，把健康管理融入日常——让预防，成为你这一生最有价值的健康投资。</p>
+      </div>
+    </div>`;
+    html+=renderLockSection('constitution');
+  }else if(ctype){
+    const c=ctype;
+    html+=`
+    <div class="detail-section"><p class="section-no">03 / 形成因素与表现</p><h3>${c.formation.title}</h3><ul>${c.formation.points.map(p=>`<li>${p}</li>`).join('')}</ul><p class="explain">${c.formation.detail}</p></div>
+    <div class="detail-section"><p class="section-no">04 / 日常饮食</p><h3>${c.diet.title}</h3><ul>${c.diet.points.map(p=>`<li>${p}</li>`).join('')}</ul><p class="explain">${c.diet.detail}</p></div>
+    <div class="detail-section"><p class="section-no">05 / 早餐安排</p><h3>${c.breakfast.title}</h3><ul>${c.breakfast.points.map(p=>`<li>${p}</li>`).join('')}</ul><p class="explain">${c.breakfast.detail}</p></div>
+    <div class="detail-section"><p class="section-no">06 / 运动与活动</p><h3>${c.exercise.title}</h3><ul>${c.exercise.points.map(p=>`<li>${p}</li>`).join('')}</ul><p class="explain">${c.exercise.detail}</p></div>
+    <div class="detail-section"><p class="section-no">07 / 四季起居与情绪</p><h3>${c.seasonal.title}</h3><ul>${c.seasonal.points.map(p=>`<li>${p}</li>`).join('')}</ul><p class="explain">${c.seasonal.detail}</p></div>
+    <div class="detail-section"><p class="section-no">08 / 分阶段执行</p><h3>${c.phases.title}</h3><ul>${c.phases.points.map(p=>`<li>${p}</li>`).join('')}</ul><p class="explain">${c.phases.detail}</p></div>
+    <div class="misconceptions"><p class="section-no">09 / 常见误区</p><h3 style="font-family:'Songti SC',serif;font-size:17px;font-weight:500;margin:10px 0 12px">${c.misconceptions.title}</h3>${c.misconceptions.items.map(m=>`<div class="mis-item"><b>${m.title}</b><p>${m.desc}</p></div>`).join('')}</div>
+    <div class="detail-section dark"><p class="section-no">10 / 安全边界</p><h3>需要及时就医的情况</h3><p class="explain">${c.safety}</p></div>`;
+  }
+
+  html+=`<div class="result-actions" style="margin-top:28px">
+    ${isMember?'<button class="btn-primary" id="retestBtn">再次测评</button>':''}
+    ${isMember?'<button class="btn-text" id="historyFromResultBtn">查看历史测评</button>':''}
+    <button class="btn-text" id="homeFromResultBtn">返回选择</button>
+  </div>
+  <div class="result-foot">体质辨识反映相对稳定的身体倾向，不等同于疾病诊断。建议结合近一年的真实感受理解本次结果。</div>`;
+
+  document.getElementById('page-result').innerHTML=html;
+  showPage('page-result');
+
+  if(isMember){
+    document.getElementById('retestBtn')?.addEventListener('click',()=>{startQuiz();});
+    document.getElementById('historyFromResultBtn')?.addEventListener('click',showHistory);
+  }
+  document.getElementById('homeFromResultBtn').addEventListener('click',()=>{showSelectPage();});
+}
+
+/* ════ 生活力画像测评流程 ════ */
+function startVitality(){
+  vProfile=[[],[],[],[],[],[]];
+  vAnswers=new Array(24).fill(undefined);
+  vIndex=0;
+  vGoal='';
+  showPage('page-vitality-profile');
+  renderVitalityProfile();
+}
+
+function renderVitalityProfile(){
+  const blocks=document.getElementById('vProfileBlocks');
+  blocks.innerHTML=VITALITY_PROFILE.map((p,n)=>{
+    return`<div class="v-profile-block">
+      <div><b style="font-size:15px">${p.question}</b>${p.max>1?`<small>最多选${p.max}项</small>`:''}</div>
+      <div class="v-profile-chips">
+        ${p.options.map(v=>`<button class="v-profile-chip ${vProfile[n].includes(v)?'selected':''}" data-q="${n}" data-v="${v}">${v}</button>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  blocks.querySelectorAll('.v-profile-chip').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const n=parseInt(btn.dataset.q);
+      const v=btn.dataset.v;
+      if(vProfile[n].includes(v)){
+        vProfile[n]=vProfile[n].filter(x=>x!==v);
+        btn.classList.remove('selected');
+      }else{
+        if(vProfile[n].length>=VITALITY_PROFILE[n].max){
+          btn.parentNode.querySelectorAll('.v-profile-chip').forEach(x=>x.classList.remove('selected'));
+          vProfile[n]=[];
+        }
+        vProfile[n].push(v);
+        btn.classList.add('selected');
+      }
+      document.getElementById('vProfileNextBtn').disabled=!vProfile.every(x=>x.length>0);
+    });
+  });
+
+  document.getElementById('vProfileNextBtn').disabled=!vProfile.every(x=>x.length>0);
+}
+
+document.getElementById('vProfileBackBtn').addEventListener('click',()=>{showSelectPage();});
+document.getElementById('vProfileNextBtn').addEventListener('click',()=>{
+  vIndex=0;
+  showPage('page-vitality-quiz');
+  renderVitalityQuestion();
+});
+
+function renderVitalityQuestion(){
+  const q=VITALITY_QUESTIONS[vIndex];
+  const total=VITALITY_QUESTIONS.length;
+  const dimIdx=Math.floor(vIndex/4);
+  const dimName=VITALITY_DIMS[dimIdx];
+
+  document.getElementById('vQuizCounter').textContent=`02 / 03 · 第 ${vIndex+1} / ${total} 题`;
+  document.getElementById('vQuizProgress').style.width=((vIndex+1)/total*100)+'%';
+
+  // 维度进度
+  document.getElementById('vDims').innerHTML=VITALITY_DIMS.map((d,i)=>{
+    let cls='';
+    if(i<dimIdx)cls='done';
+    else if(i===dimIdx)cls='current';
+    return`<span class="v-dim ${cls}"><b>${i<dimIdx?'✓':i+1}</b>${VITALITY_SHORT[i]}</span>`;
+  }).join('');
+
+  const isLast=vIndex===total-1;
+  const selectedVal=vAnswers[vIndex];
+
+  document.getElementById('vQuizBody').innerHTML=`
+    <div class="quiz-no slide-in">${dimName} · 第 ${vIndex%4+1} 题</div>
+    <div class="quiz-question slide-in">${q.text}</div>
+    <div class="v-answers slide-in">
+      ${q.options.map((opt,i)=>`<div class="v-answer ${selectedVal===i?'selected':''}" data-val="${i}">
+        <span class="va-label">${String.fromCharCode(65+i)}</span>
+        <span class="va-text">${opt}</span>
+        <span class="va-check">✓</span>
+      </div>`).join('')}
+    </div>`;
+
+  document.querySelectorAll('.v-answer').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const val=parseInt(el.dataset.val);
+      vAnswers[vIndex]=val;
+      el.parentNode.querySelectorAll('.v-answer').forEach(x=>x.classList.remove('selected'));
+      el.classList.add('selected');
+
+      const isModuleEnd=vIndex%4===3;
+      const delay=isModuleEnd?1500:400;
+
+      if(isModuleEnd){
+        showVitalityModuleModal(dimName);
+      }
+
+      setTimeout(()=>{
+        if(isModuleEnd)closeVitalityModuleModal();
+        if(isLast){
+          showVitalityGoalPage();
+        }else{
+          vIndex++;
+          renderVitalityQuestion();
+        }
+      },delay);
+    });
+  });
+
+  const nextBtn=document.getElementById('vNextBtn');
+  nextBtn.textContent=isLast?'选择目标 →':'下一题';
+  nextBtn.disabled=selectedVal===undefined;
+  nextBtn.onclick=()=>{
+    if(selectedVal===undefined)return;
+    if(isLast)showVitalityGoalPage();
+    else{vIndex++;renderVitalityQuestion();}
+  };
+  document.getElementById('vPrevBtn').onclick=()=>{
+    if(vIndex>0){vIndex--;renderVitalityQuestion();}
+    else{showPage('page-vitality-profile');}
+  };
+  document.getElementById('vPrevBtn').style.visibility='visible';
+  document.getElementById('vNextBtn').style.visibility='visible';
+}
+
+function showVitalityModuleModal(dimName){
+  const modal=document.createElement('div');
+  modal.id='vModuleModal';
+  modal.className='v-module-modal';
+  modal.innerHTML=`<div class="v-module-box">
+    <div class="v-module-icon">✦</div>
+    <div class="v-module-title">${dimName} 模块完成</div>
+    <div class="v-module-desc">这一维度的评估已完成<br>继续拼合你的生活力画像</div>
+    <div class="v-module-hint">即将自动进入下一模块…</div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+function closeVitalityModuleModal(){
+  const modal=document.getElementById('vModuleModal');
+  if(modal)modal.remove();
+}
+
+function showVitalityGoalPage(){
+  const list=document.getElementById('vGoalList');
+  list.innerHTML=VITALITY_GOALS.map(g=>{
+    return`<button class="v-goal-btn ${vGoal===g?'selected':''}" data-goal="${g}">${g} →</button>`;
+  }).join('');
+
+  list.querySelectorAll('.v-goal-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      vGoal=btn.dataset.goal;
+      btn.parentNode.querySelectorAll('.v-goal-btn').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('vGoalNextBtn').disabled=false;
+    });
+  });
+
+  document.getElementById('vGoalNextBtn').disabled=!vGoal;
+  showPage('page-vitality-goal');
+}
+
+document.getElementById('vGoalBackBtn').addEventListener('click',()=>{
+  vIndex=23;
+  showPage('page-vitality-quiz');
+  renderVitalityQuestion();
+});
+document.getElementById('vGoalNextBtn').addEventListener('click',()=>{
+  if(!vGoal)return;
+  finishVitalityQuiz();
+});
+
+async function finishVitalityQuiz(){
+  const{scores,total,order}=calcVitalityScores(vAnswers);
+  const statusText=total>=80?'状态稳健，继续保持生活节奏':total>=65?'有一定基础，仍有方向值得优化':'从一个小改变开始，重建生活节奏';
+  const topDims=order.slice(0,3).map(i=>VITALITY_SHORT[i]);
+
+  const profileData={};
+  VITALITY_PROFILE.forEach((p,i)=>{
+    profileData[p.question]=vProfile[i];
+  });
+
+  showLoading();
+  await API.post('/api/keys/result',{
+    keyId:currentKey.id,
+    type:'vitality',
+    totalScore:total,
+    dimScores:scores,
+    topDims,
+    chosenGoal:vGoal,
+    profileData,
+    statusText
+  });
+  const updated=await API.post('/api/keys/validate',{key:currentKey.key,deviceId:getDeviceId()});
+  if(!updated.error)currentKey=updated;
+  hideLoading();
+
+  renderVitalityResult({scores,total,order,statusText,topDims,chosenGoal:vGoal,profileData});
+}
+
+async function renderVitalityResult(data){
+  const isMember=currentKey.isMember&&(!currentKey.memberExpiresAt||new Date(currentKey.memberExpiresAt)>new Date());
+  // 兼容两种数据格式：刚完成的新数据 vs 从历史记录加载的存储数据
+  const scores=data.scores||data.dimScores;
+  const total=data.total!==undefined?data.total:data.totalScore;
+  const order=data.order||[0,1,2,3,4,5].sort((a,b)=>scores[a]-scores[b]);
+  const statusText=data.statusText;
+  const chosenGoal=data.chosenGoal;
+  const profileData=data.profileData;
+  const topNames=order.slice(0,3).map(i=>VITALITY_SHORT[i]).join(' / ');
+
+  // 雷达图坐标计算
+  const pts=scores.map((s,i)=>{
+    const a=(-90+i*60)*Math.PI/180;
+    const r=36*s/100;
+    return[50+Math.cos(a)*r,50+Math.sin(a)*r];
+  });
+  const ptsStr=pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  const dotsHtml=pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="1.8" class="radar-dot"/>`).join('');
+  const labelR=48;
+  const labelsHtml=VITALITY_DIMS.map((d,i)=>{
+    const a=(-90+i*60)*Math.PI/180;
+    let x=50+Math.cos(a)*labelR;
+    let y=50+Math.sin(a)*labelR;
+    let anchor='middle';
+    if(i===1||i===5){anchor='start';x+=1.5;}
+    else if(i===2||i===4){anchor='end';x-=1.5;}
+    else if(i===0){y-=2;}
+    else if(i===3){y+=3;}
+    return`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="${anchor}" dominant-baseline="central" class="radar-label">${d}</text>`;
+  }).join('');
+
+  let html=`
+  <div class="v-result-hero">
+    <p class="eyebrow">健康生活力画像 · ${isMember?'会员详细版':'基础版'}</p>
+    <div class="v-total">
+      <div>
+        <span style="font-size:13px;color:#9bb0aa;display:block;margin-bottom:4px">综合得分</span>
+        <span class="v-total-score">${total}<small> / 100</small></span>
+      </div>`;
+
+  // 尝试获取体质测评结果（用于综合画像）
+  let constitutionTypeName='';
+  let constitutionSecondary='';
+  try{
+    const histRes=await API.get(`/api/keys/${currentKey.id}/results`);
+    const cResults=histRes.results||[];
+    if(cResults.length>0){
+      const latestC=cResults[0];
+      const cType=CONSTITUTION_TYPES[latestC.mainType];
+      if(cType)constitutionTypeName=cType.name;
+      if(latestC.secondaryTypes&&latestC.secondaryTypes.length>0){
+        constitutionSecondary='兼有：'+latestC.secondaryTypes.map(t=>CONSTITUTION_TYPES[t]?CONSTITUTION_TYPES[t].name:t).join('、');
+      }
+    }
+  }catch(e){}
+
+  html+=`
+      <div class="v-total-info">
+        <h1>${statusText}</h1>
+        <p>你当前最值得优先关注：<b>${topNames}</b></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="result-section">
+    <p class="section-no">01 / 六维生活力</p>
+    <h2>看见现在的生活状态</h2>
+    <div class="v-radar">
+      <svg viewBox="-22 -6 144 112">
+        <polygon class="radar-grid" points="50,14 81,32 81,68 50,86 19,68 19,32"></polygon>
+        <polygon class="radar-grid" points="50,26 71,38 71,62 50,74 29,62 29,38"></polygon>
+        <polygon class="radar-area" points="${ptsStr}"></polygon>
+        <g>${dotsHtml}</g>
+        <g>${labelsHtml}</g>
+      </svg>
+    </div>
+    <div class="v-bars">
+      ${VITALITY_DIMS.map((d,i)=>{
+        const isTop=order.slice(0,3).includes(i);
+        return`<div class="v-bar-row">
+          <span style="${isTop?'font-weight:700;color:var(--ink)':''}">${d}</span>
+          <div class="v-bar-track"><span class="v-bar-fill" style="width:${scores[i]}%;background:${isTop?'var(--ink)':'var(--jade)'}"></span></div>
+          <strong>${scores[i]}</strong>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+
+  <div class="result-section">
+    <p class="section-no">02 / TOP 3 关注方向</p>
+    <h2>先处理最重要的三件事</h2>
+    ${order.slice(0,3).map((n,i)=>`<div class="v-focus">
+      <h3>0${i+1} · ${VITALITY_DIMS[n]}<span>${scores[n]} / 100</span></h3>
+      <p>${VITALITY_EXPLAIN[n]}</p>
+    </div>`).join('')}
+    <div class="v-goal-box">
+      <b>你主动选择的优先目标</b>
+      <p>${chosenGoal}</p>
+    </div>
+  </div>`;
+
+  if(!isMember){
+    // 综合画像（体质倾向 × 当前生活方式）
+    html+=`
+    <div class="v-combined">
+      <p class="section-no">两块拼图，组成更完整的你</p>
+      <h2>体质倾向 × 当前生活方式</h2>
+      <div class="v-portrait">
+        <div class="v-portrait-item">
+          <span>中医体质</span>
+          <b>${constitutionTypeName||'尚未测评'}</b>
+          ${constitutionSecondary?`<small>${constitutionSecondary}</small>`:'<small>完成体质测评后显示</small>'}
+        </div>
+        <div class="v-portrait-arrow">＋</div>
+        <div class="v-portrait-item">
+          <span>当前生活方式</span>
+          <b>${order.slice(0,3).map(i=>VITALITY_SHORT[i]).join(' · ')}</b>
+          <small>建议优先关注</small>
+        </div>
+        <div class="v-portrait-arrow">→</div>
+        <div class="v-portrait-priority">
+          <span>当前优先顺序</span>
+          ${order.slice(0,3).map((n,i)=>`<b>${i+1}. ${i===0?chosenGoal:'改善'+VITALITY_DIMS[n]}</b>`).join('')}
+        </div>
+      </div>
+    </div>`;
+    // 致每一位关注健康的你
+    html+=`
+    <div class="v-dedication">
+      <p class="section-no" style="text-align:center">A MESSAGE FOR YOU</p>
+      <h2>致每一位关注健康的你</h2>
+      <div class="v-dedication-body">
+        <p>世界卫生组织的研究表明：<b>预防是最具成本效益的健康干预方式</b>。达到同等健康目标，预防投入、治疗费用与抢救费用的比例约为 <b>1∶8.5∶100</b>——即在预防上每多投入 <b>1元</b>，就可减少 <b>8.5元</b> 的治疗支出，并省下 <b>100元</b> 的抢救费用。</p>
+        <p>健康从来不是等出了问题才补救。与其等到身体发出警报，不如从今天开始，多一分预防意识，少十分被动就医。关注身体发出的每一个信号，把健康管理融入日常——让预防，成为你这一生最有价值的健康投资。</p>
+      </div>
+    </div>`;
+    html+=renderLockSection('vitality');
+  }else{
+    // 会员：详细版分析
+    const vd=VITALITY_DETAIL;
+    let secNo=3;
+
+    // 综合解读
+    html+=`
+    <div class="result-section">
+      <p class="section-no">0${secNo} / 综合解读</p>
+      <h2>你的健康生活力全景</h2>
+      <p class="intro">综合得分 ${total}/100。${statusText}。六维中表现最好的是<b>${VITALITY_DIMS[order[5]]}</b>（${scores[order[5]]}分），最需要关注的是<b>${VITALITY_DIMS[order[0]]}</b>（${scores[order[0]]}分）。</p>
+      <p class="intro" style="margin-top:10px">健康生活力不是非黑即白的判断，而是一张动态地图——每个维度的分数都在告诉你可以从哪里开始改善。不需要同时改变所有方面，先从得分最低的维度入手，效果最明显。</p>
+    </div>`;
+    secNo++;
+
+    // TOP 3 维度详细分析
+    for(let i=0;i<3;i++){
+      const dimIdx=order[i];
+      const score=scores[dimIdx];
+      const level=score<50?'low':(score<=75?'mid':'high');
+      const detail=vd.dims[dimIdx][level];
+      html+=`
+      <div class="detail-section">
+        <p class="section-no">0${secNo} / ${VITALITY_DIMS[dimIdx]} · 详细分析</p>
+        <h3>${detail.title}</h3>
+        <p class="intro" style="margin-bottom:14px">${detail.analysis}</p>
+        <ul>${detail.points.map(p=>`<li>${p}</li>`).join('')}</ul>
+        <p class="explain">${detail.detail}</p>
+      </div>`;
+      secNo++;
+    }
+
+    // 其余3个维度简要说明
+    for(let i=3;i<6;i++){
+      const dimIdx=order[i];
+      const score=scores[dimIdx];
+      const level=score<50?'low':(score<=75?'mid':'high');
+      const detail=vd.dims[dimIdx][level];
+      html+=`
+      <div class="detail-section">
+        <p class="section-no">0${secNo} / ${VITALITY_DIMS[dimIdx]} · 保持与优化</p>
+        <h3>${detail.title}</h3>
+        <ul>${detail.points.map(p=>`<li>${p}</li>`).join('')}</ul>
+        <p class="explain">${detail.detail}</p>
+      </div>`;
+      secNo++;
+    }
+
+    // 7天微行动计划
+    html+=`
+    <div class="detail-section dark">
+      <p class="section-no">0${secNo} / ${vd.microPlan.title}</p>
+      <h3>${vd.microPlan.title}</h3>
+      <p class="explain" style="margin-bottom:16px">${vd.microPlan.intro}</p>
+      ${vd.microPlan.days.map(d=>`
+        <div style="display:flex;gap:12px;margin-bottom:14px;align-items:flex-start">
+          <div style="flex-shrink:0;width:32px;height:32px;border-radius:50%;background:var(--gold);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700">D${d.day}</div>
+          <div>
+            <b style="color:#dbc394;font-size:14px">${d.title}</b>
+            <p class="explain" style="margin-top:4px">${d.desc}</p>
+          </div>
+        </div>
+      `).join('')}
+    </div>`;
+    secNo++;
+
+    // 常见误区
+    html+=`
+    <div class="misconceptions">
+      <p class="section-no">0${secNo} / ${vd.misconceptions.title}</p>
+      <h3 style="font-family:'Songti SC',serif;font-size:17px;font-weight:500;margin:10px 0 12px">${vd.misconceptions.title}</h3>
+      ${vd.misconceptions.items.map(m=>`<div class="mis-item"><b>${m.title}</b><p>${m.desc}</p></div>`).join('')}
+    </div>`;
+    secNo++;
+
+    // 安全边界
+    html+=`
+    <div class="detail-section dark">
+      <p class="section-no">0${secNo} / 安全边界</p>
+      <h3>需要及时就医的情况</h3>
+      <p class="explain">${vd.safety}</p>
+    </div>`;
+    secNo++;
+
+    // 综合画像（体质倾向 × 当前生活方式）— 使用已获取的数据
+    if(constitutionTypeName){
+      const lifeTags=order.slice(0,3).map(i=>VITALITY_SHORT[i]).join(' · ');
+      const priorities=order.slice(0,3).map((n,i)=>{
+        if(i===0)return`<b>${i+1}. ${chosenGoal}</b>`;
+        return`<b>${i+1}. 改善${VITALITY_DIMS[n]}</b>`;
+      }).join('');
+
+      html+=`
+      <div class="v-combined">
+        <p class="section-no">两块拼图，组成更完整的你</p>
+        <h2>体质倾向 × 当前生活方式</h2>
+        <div class="v-portrait">
+          <div class="v-portrait-item">
+            <span>中医体质</span>
+            <b>${constitutionTypeName}</b>
+            ${constitutionSecondary?`<small>${constitutionSecondary}</small>`:''}
+          </div>
+          <div class="v-portrait-arrow">＋</div>
+          <div class="v-portrait-item">
+            <span>当前生活方式</span>
+            <b>${lifeTags}</b>
+            <small>建议优先关注</small>
+          </div>
+          <div class="v-portrait-arrow">→</div>
+          <div class="v-portrait-priority">
+            <span>当前优先顺序</span>
+            ${priorities}
+          </div>
+        </div>
+      </div>`;
+    }
+  }
+
+  html+=`<div class="result-actions" style="margin-top:28px">
+    ${isMember?'<button class="btn-primary" id="vRetestBtn">再次测评</button>':''}
+    ${isMember?'<button class="btn-text" id="vHistoryFromResultBtn">查看历史测评</button>':''}
+    <button class="btn-text" id="vHomeFromResultBtn">返回选择</button>
+  </div>
+  <div class="result-foot">本测评用于健康教育和生活方式观察，不用于疾病诊断、治疗或判断具体营养素缺乏。若有持续不适、慢性病、孕期或正在用药，请咨询有资质的专业人员。</div>`;
+
+  document.getElementById('page-vitality-result').innerHTML=html;
+  showPage('page-vitality-result');
+
+  if(isMember){
+    document.getElementById('vRetestBtn')?.addEventListener('click',()=>{startVitality();});
+    document.getElementById('vHistoryFromResultBtn')?.addEventListener('click',showHistory);
+  }
+  document.getElementById('vHomeFromResultBtn').addEventListener('click',()=>{showSelectPage();});
+}
+
+/* ════ 历史测评页 ════ */
+async function showHistory(){
+  if(!currentKey){showPage('page-home');return;}
+  const isMember=currentKey.isMember&&(!currentKey.memberExpiresAt||new Date(currentKey.memberExpiresAt)>new Date());
+  if(!isMember){showToast('开通会员后可查看历史测评');showPage('page-home');return;}
+
+  showLoading();
+  const r=await API.get(`/api/keys/${currentKey.id}/results`);
+  hideLoading();
+
+  const body=document.getElementById('historyBody');
+  const cResults=r.results||[];
+  const vResults=r.vitalityResults||[];
+
+  // 合并并按时间倒序（记录原始索引，避免 indexOf 找不到 spread 后的新对象）
+  const allItems=[
+    ...cResults.map((res,i)=>({...res,_type:'constitution',_origIdx:i})),
+    ...vResults.map((res,i)=>({...res,_type:'vitality',_origIdx:i}))
+  ].sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  if(allItems.length===0){
+    body.innerHTML=`<div class="history-empty"><div class="icon">📋</div><p>暂无历史测评记录</p></div>`;
+  }else{
+    body.innerHTML=allItems.map((res,i)=>{
+      const d=new Date(res.date);
+      const dateStr=`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      if(res._type==='constitution'){
+        const c=CONSTITUTION_TYPES[res.mainType];
+        const cdata=CONSTITUTION_DATA?CONSTITUTION_DATA[res.mainType]:null;
+        return`<div class="history-item" data-type="constitution" data-idx="${res._origIdx}">
+          <div class="h-date">${dateStr}<span class="h-badge constitution">体质测评</span></div>
+          <div class="h-type">${c.name}</div>
+          <div class="h-desc">${cdata?cdata.summary:''}</div>
+          <div class="h-arrow">查看详情 ›</div>
+        </div>`;
+      }else{
+        return`<div class="history-item vitality-item" data-type="vitality" data-idx="${res._origIdx}">
+          <div class="h-date">${dateStr}<span class="h-badge vitality">生活力测评</span></div>
+          <div class="h-type">${res.totalScore}分</div>
+          <div class="h-desc">目标：${res.chosenGoal||'—'} · TOP3：${(res.topDims||[]).join(' / ')}</div>
+          <div class="h-arrow">查看详情 ›</div>
+        </div>`;
+      }
+    }).join('');
+
+    body.querySelectorAll('.history-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        const type=el.dataset.type;
+        const idx=parseInt(el.dataset.idx);
+        if(type==='constitution'){
+          renderResult(cResults[idx]);
+        }else{
+          const res=vResults[idx];
+          const{scores,total,order}=calcVitalityScoresFromStored(res);
+          const statusText=res.statusText||'';
+          const topDims=res.topDims||[];
+          renderVitalityResult({scores,total,order,statusText,topDims,chosenGoal:res.chosenGoal,profileData:res.profileData});
+        }
+      });
+    });
+  }
+  showPage('page-history');
+}
+
+/* 从存储的结果重建排序 */
+function calcVitalityScoresFromStored(res){
+  const scores=res.dimScores||[0,0,0,0,0,0];
+  const total=res.totalScore||0;
+  const order=[0,1,2,3,4,5].sort((a,b)=>scores[a]-scores[b]);
+  return{scores,total,order};
+}
+
+document.getElementById('historyBtn').addEventListener('click',showHistory);
+document.getElementById('backHomeBtn').addEventListener('click',()=>{
+  if(currentKey&&currentKey.isMember&&currentKey.memberExpiresAt&&new Date(currentKey.memberExpiresAt)>new Date()){showMemberPanel(currentKey);}
+  showPage('page-home');
+});
+
+function showMemberPanel(keyData){
+  const exp=new Date(keyData.memberExpiresAt);
+  document.getElementById('memberExpiry').textContent=`有效期至 ${exp.getFullYear()}/${String(exp.getMonth()+1).padStart(2,'0')}/${String(exp.getDate()).padStart(2,'0')}`;
+  document.getElementById('memberPanel').style.display='flex';
+  document.getElementById('keyPanel').style.display='none';
+  document.getElementById('historyBtn').style.display='none';
+}
+function hideMemberPanel(){
+  document.getElementById('memberPanel').style.display='none';
+  document.getElementById('keyPanel').style.display='flex';
+  document.getElementById('historyBtn').style.display='block';
+  document.getElementById('keyInput').value='';
+}
+document.getElementById('retestHomeBtn').addEventListener('click',()=>{if(currentKey)showSelectPage();});
+document.getElementById('historyMemberBtn').addEventListener('click',showHistory);
+
+/* ════════════════════════════════════════
+   管理端逻辑
+═════════════════════════════════════════ */
+let currentAdmin=null;
+
+document.getElementById('loginBtn').addEventListener('click',doLogin);
+document.getElementById('loginPass').addEventListener('keypress',e=>{if(e.key==='Enter')doLogin();});
+
+async function doLogin(){
+  const u=document.getElementById('loginUser').value.trim();
+  const p=document.getElementById('loginPass').value;
+  const errEl=document.getElementById('loginError');
+  errEl.classList.remove('show');
+  if(!u||!p){errEl.textContent='请输入账号和密码';errEl.classList.add('show');return;}
+
+  console.log('登录请求:',{username:u,passwordLength:p.length});
+  showLoading();
+  try{
+    const r=await API.post('/api/login',{username:u,password:p});
+    console.log('登录响应:',r);
+    hideLoading();
+    if(r.error){errEl.textContent=r.error;errEl.classList.add('show');return;}
+    API.token=r.token;
+    sessionStorage.setItem('jh_token',r.token);
+    currentAdmin=r.admin;
+    showAdmin();
+  }catch(e){
+    hideLoading();
+    console.error('登录异常:',e);
+    errEl.textContent='网络请求失败: '+e.message;
+    errEl.classList.add('show');
+  }
+}
+
+function showAdmin(){
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('adminWrap').classList.add('active');
+  document.getElementById('adminName').textContent=currentAdmin.nickname||currentAdmin.username;
+  document.getElementById('adminRole').textContent=currentAdmin.role==='super'?'超级管理员':'子管理员';
+  const isSuper=currentAdmin.role==='super';
+  document.getElementById('subAdminTabBtn').style.display=isSuper?'block':'none';
+  document.getElementById('genTestKeyBtn').style.display=isSuper?'block':'none';
+  document.getElementById('changePwdBtn').style.display=isSuper?'block':'none';
+  document.getElementById('nicknameBar').style.display=isSuper?'none':'flex';
+  if(!isSuper)document.getElementById('nicknameInput').value=currentAdmin.nickname||'';
+  initDashboard();renderKeyTable();
+  if(isSuper)renderSubAdmins();
+  populateAdminFilter();
+}
+
+document.getElementById('logoutBtn').addEventListener('click',()=>{
+  API.token=null;sessionStorage.removeItem('jh_token');currentAdmin=null;
+  document.getElementById('adminWrap').classList.remove('active');
+  document.getElementById('loginPage').style.display='flex';
+  document.getElementById('loginUser').value='';document.getElementById('loginPass').value='';
+});
+
+document.getElementById('changePwdBtn').addEventListener('click',()=>{
+  showModal(`<div class="modal-head"><h3>修改密码</h3><span class="close" onclick="closeModal()">&times;</span></div>
+  <div class="modal-body">
+    <div class="form-field"><label>当前密码</label><input id="oldPwd" type="password"></div>
+    <div class="form-field"><label>新密码</label><input id="newPwd" type="password"></div>
+    <div class="form-field"><label>确认新密码</label><input id="confirmPwd" type="password"></div>
+  </div>
+  <div class="modal-foot"><button class="btn-cancel" onclick="closeModal()">取消</button><button class="btn-ok" onclick="doChangePwd()">确认修改</button></div>`);
+});
+
+async function doChangePwd(){
+  const oldPwd=document.getElementById('oldPwd').value;
+  const newPwd=document.getElementById('newPwd').value;
+  const confirmPwd=document.getElementById('confirmPwd').value;
+  if(oldPwd!==currentAdmin.password){showToast('当前密码不正确');return;}
+  if(!newPwd||newPwd.length<6){showToast('新密码至少6位');return;}
+  if(newPwd!==confirmPwd){showToast('两次输入不一致');return;}
+  const r=await API.post('/api/change-password',{oldPassword:oldPwd,newPassword:newPwd});
+  if(r.error){showToast(r.error);return;}
+  currentAdmin.password=newPwd;closeModal();showToast('密码已修改');
+}
+
+document.querySelectorAll('.admin-nav button[data-tab]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    if(btn.classList.contains('logout'))return;
+    document.querySelectorAll('.admin-nav button[data-tab]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.admin-content').forEach(c=>c.style.display='none');
+    document.getElementById('tab-'+btn.dataset.tab).style.display='block';
+  });
+});
+
+document.getElementById('saveNicknameBtn').addEventListener('click',async()=>{
+  const nick=document.getElementById('nicknameInput').value.trim();
+  if(!nick){showToast('请输入昵称');return;}
+  const r=await API.post('/api/update-nickname',{nickname:nick});
+  if(r.error){showToast(r.error);return;}
+  currentAdmin.nickname=nick;
+  document.getElementById('adminName').textContent=nick;
+  showToast('昵称已更新');
+});
+
+/* ════ 数据看板 ════ */
+function initDashboard(){
+  const today=new Date();const weekAgo=new Date(today);weekAgo.setDate(weekAgo.getDate()-6);
+  document.getElementById('dateStart').valueAsDate=weekAgo;
+  document.getElementById('dateEnd').valueAsDate=today;
+  updateDashboard();
+  document.getElementById('dateStart').addEventListener('change',updateDashboard);
+  document.getElementById('dateEnd').addEventListener('change',updateDashboard);
+}
+document.querySelectorAll('.dash-presets button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.dash-presets button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const preset=btn.dataset.preset;const today=new Date();let start=new Date(today);
+    if(preset==='today'){}
+    else if(preset==='yesterday'){start.setDate(start.getDate()-1);today.setDate(today.getDate()-1)}
+    else if(preset==='week'){start.setDate(start.getDate()-6)}
+    else if(preset==='month'){start=new Date(today.getFullYear(),today.getMonth(),1)}
+    document.getElementById('dateStart').valueAsDate=start;
+    document.getElementById('dateEnd').valueAsDate=today;
+    updateDashboard();
+  });
+});
+
+async function updateDashboard(){
+  const startStr=document.getElementById('dateStart').value;
+  const endStr=document.getElementById('dateEnd').value;
+  if(!startStr||!endStr)return;
+  document.getElementById('dashTitle').textContent=`${dateStr(new Date(startStr).toISOString())} 至 ${dateStr(new Date(endStr).toISOString())}`;
+  const r=await API.get(`/api/dashboard?start=${startStr}&end=${endStr}`);
+  if(r.error)return;
+  document.getElementById('metricGen').textContent=r.totalGen;
+  document.getElementById('metricUnlock').textContent=r.totalUnlock;
+  document.getElementById('metricCompleted').textContent=r.totalCompleted;
+  document.getElementById('metricTest').textContent=r.totalTest;
+}
+
+/* ════ 密钥管理 ════ */
+async function populateAdminFilter(){
+  const select=document.getElementById('filterAdmin');
+  const r=await API.get('/api/admins');
+  if(r.error)return;
+  select.innerHTML='<option value="">全部管理员</option>';
+  r.admins.forEach(a=>{
+    const opt=document.createElement('option');
+    opt.value=a.id;
+    opt.textContent=a.nickname||a.username+(a.role==='super'?' (超级管理员)':'');
+    select.appendChild(opt);
+  });
+  if(currentAdmin.role==='sub')select.value=currentAdmin.id;
+}
+
+document.getElementById('genKeyBtn').addEventListener('click',()=>generateKey(false));
+document.getElementById('genTestKeyBtn').addEventListener('click',()=>generateKey(true));
+
+async function generateKey(isTest){
+  const remark=document.getElementById('genRemark').value.trim();
+  showLoading();
+  try{
+    const r=await API.post('/api/keys/generate',{remark,isTest});
+    hideLoading();
+    if(r.error){showToast(r.error);return;}
+    document.getElementById('genRemark').value='';
+    showModal(`<div class="modal-head"><h3>${isTest?'测试密钥已生成':'密钥已生成'}</h3><span class="close" onclick="closeModal()">&times;</span></div>
+    <div class="modal-body">
+      <p style="text-align:center;margin-bottom:6px;color:var(--muted);font-size:13px">请复制以下密钥并发给用户</p>
+      <div class="pwd-show"><label>测评密钥</label><div class="pwd" style="font-size:22px;letter-spacing:.08em">${r.key}</div><button class="copy-btn" onclick="copyToClipboard('${r.key}')">复制密钥</button></div>
+      ${remark?`<p style="font-size:12px;color:var(--muted);text-align:center;margin-top:8px">备注：${remark}</p>`:''}
+      ${isTest?'<p style="font-size:12px;color:var(--gold);text-align:center;margin-top:8px">测试密钥可反复使用，结果不保存</p>':''}
+    </div>
+    <div class="modal-foot"><button class="btn-ok" onclick="closeModal()">知道了</button></div>`);
+    await updateDashboard();await renderKeyTable();
+  }catch(e){
+    hideLoading();
+    showToast('操作失败: '+(e.message||e));
+    console.error('generateKey error:',e);
+  }
+}
+
+function copyToClipboard(text){
+  const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');showToast('已复制：'+text);}
+  catch(e){showToast('请手动复制：'+text);}
+  document.body.removeChild(ta);
+}
+
+document.getElementById('filterAdmin').addEventListener('change',renderKeyTable);
+document.getElementById('filterStatus').addEventListener('change',renderKeyTable);
+document.getElementById('filterSearch').addEventListener('input',renderKeyTable);
+
+async function renderKeyTable(){
+  const adminFilter=document.getElementById('filterAdmin').value;
+  const statusFilter=document.getElementById('filterStatus').value;
+  const search=document.getElementById('filterSearch').value.trim();
+  let url='/api/keys?';
+  if(adminFilter)url+='adminId='+encodeURIComponent(adminFilter)+'&';
+  if(statusFilter)url+='status='+statusFilter+'&';
+  if(search)url+='search='+encodeURIComponent(search)+'&';
+  const r=await API.get(url);
+  if(r.error)return;
+  const keys=r.keys||[];
+  const tbody=document.getElementById('keyTableBody');
+  if(keys.length===0){tbody.innerHTML='<tr><td colspan="10" class="empty-row">暂无密钥记录</td></tr>';return;}
+  tbody.innerHTML=keys.map(k=>{
+    const isCreator=k.createdBy===currentAdmin.id;
+    const isSuper=currentAdmin.role==='super';
+    const canOperate=isCreator||isSuper;
+    // 体质状态
+    let cStatusBadge;
+    if(k.status==='disabled')cStatusBadge='<span class="badge disabled">已停用</span>';
+    else if(k.status==='completed')cStatusBadge='<span class="badge completed">已完成</span>';
+    else cStatusBadge='<span class="badge unused">未使用</span>';
+    // 生活力状态
+    let vStatusBadge;
+    if(k.vitalityStatus==='completed')vStatusBadge='<span class="badge completed">已完成</span>';
+    else vStatusBadge='<span class="badge unused">未使用</span>';
+    // 会员
+    let memberBadge;
+    if(k.isTest)memberBadge='<span class="badge test">测试密钥</span>';
+    else if(k.isMember){const expired=k.memberExpiresAt&&new Date(k.memberExpiresAt)<new Date();memberBadge=expired?'<span class="badge expired">会员过期</span>':'<span class="badge member">已解锁</span>';}
+    else memberBadge='<span style="font-size:11px;color:var(--muted)">基础版</span>';
+    // 体质结果
+    let cResultCell;
+    if(k.latestResult){const c=CONSTITUTION_TYPES[k.latestResult.mainType];cResultCell=`${c.name} · <a href="javascript:void(0)" onclick="showKeyDetail('${k.id}')" style="color:var(--jade)">详情</a>`;}
+    else cResultCell='<span style="color:var(--muted)">—</span>';
+    // 生活力结果
+    let vResultCell;
+    if(k.latestVitalityResult){vResultCell=`${k.latestVitalityResult.chosenGoal||'—'} · <a href="javascript:void(0)" onclick="showKeyDetail('${k.id}')" style="color:var(--jade)">详情</a>`;}
+    else vResultCell='<span style="color:var(--muted)">—</span>';
+    // 设备绑定
+    let deviceBadge;
+    if(k.isTest)deviceBadge='<span style="font-size:11px;color:var(--muted)">不限设备</span>';
+    else if(k.deviceBound)deviceBadge='<span class="badge member">已绑定设备</span>';
+    else deviceBadge='<span style="font-size:11px;color:var(--muted)">未绑定</span>';
+    // 操作
+    let actions;
+    if(canOperate){
+      actions='<div class="row-actions">';
+      if(k.isMember&&!k.isTest)actions+=`<button onclick="toggleMember('${k.id}',false)">取消会员</button>`;
+      else if(!k.isMember)actions+=`<button onclick="toggleMember('${k.id}',true)">解锁会员</button>`;
+      actions+=`<button onclick="editRemark('${k.id}')">备注</button>`;
+      if(k.deviceBound&&!k.isTest)actions+=`<button onclick="unbindDevice('${k.id}')">解除设备</button>`;
+      if(k.status!=='disabled')actions+=`<button onclick="disableKey('${k.id}',true)">停用</button>`;
+      else actions+=`<button onclick="disableKey('${k.id}',false)">恢复</button>`;
+      if(isSuper)actions+=`<button class="danger" onclick="deleteKey('${k.id}')">删除</button>`;
+      actions+='</div>';
+    }else actions='<span class="readonly-tag">仅可查看</span>';
+    return`<tr><td><span class="td-key">${k.key}</span>${k.remark?`<span class="td-remark">${k.remark}</span>`:''}</td><td>${k.createdByNickname}</td><td>${cStatusBadge}</td><td>${vStatusBadge}</td><td>${memberBadge}</td><td>${deviceBadge}</td><td>${cResultCell}</td><td>${vResultCell}</td><td style="font-size:12px;color:var(--muted)">${formatDate(k.createdAt)}</td><td>${actions}</td></tr>`;
+  }).join('');
+}
+
+async function toggleMember(keyId,unlock){
+  showLoading();
+  const r=await API.post('/api/keys/member',{keyId,unlock});
+  hideLoading();
+  if(r.error){showToast(r.error);return;}
+  showToast(unlock?'会员权限已解锁，有效期1个月':'已取消会员权限');
+  renderKeyTable();updateDashboard();
+}
+
+function editRemark(keyId){
+  showModal(`<div class="modal-head"><h3>编辑备注</h3><span class="close" onclick="closeModal()">&times;</span></div>
+  <div class="modal-body"><div class="form-field"><label>备注内容</label><textarea id="remarkInput"></textarea></div></div>
+  <div class="modal-foot"><button class="btn-cancel" onclick="closeModal()">取消</button><button class="btn-ok" onclick="saveRemark('${keyId}')">保存</button></div>`);
+}
+
+async function saveRemark(keyId){
+  const remark=document.getElementById('remarkInput').value.trim();
+  const r=await API.post('/api/keys/remark',{keyId,remark});
+  if(r.error){showToast(r.error);return;}
+  closeModal();renderKeyTable();showToast('备注已保存');
+}
+
+function disableKey(keyId,disable){
+  showModal(`<div class="modal-head"><h3>${disable?'确认停用':'确认恢复'}</h3><span class="close" onclick="closeModal()">&times;</span></div>
+  <div class="modal-body"><p>确定要${disable?'停用':'恢复'}此密钥吗？</p></div>
+  <div class="modal-foot"><button class="btn-cancel" onclick="closeModal()">取消</button><button class="${disable?'btn-danger':'btn-ok'}" onclick="confirmDisable('${keyId}',${disable})">${disable?'确认停用':'确认恢复'}</button></div>`);
+}
+
+async function confirmDisable(keyId,disable){
+  const r=await API.post('/api/keys/disable',{keyId,disable});
+  if(r.error){showToast(r.error);return;}
+  closeModal();renderKeyTable();showToast(disable?'密钥已停用':'密钥已恢复');
+}
+
+function unbindDevice(keyId){
+  showModal(`<div class="modal-head"><h3>解除设备绑定</h3><span class="close" onclick="closeModal()">&times;</span></div>
+  <div class="modal-body"><p>解除后，此密钥可以在新设备上重新激活使用。</p><p style="color:var(--gold);font-size:12px;margin-top:8px">适用于用户更换设备或误绑设备的情况。</p></div>
+  <div class="modal-foot"><button class="btn-cancel" onclick="closeModal()">取消</button><button class="btn-ok" onclick="confirmUnbindDevice('${keyId}')">确认解除</button></div>`);
+}
+
+async function confirmUnbindDevice(keyId){
+  const r=await API.post('/api/keys/unbind-device',{keyId});
+  if(r.error){showToast(r.error);return;}
+  closeModal();renderKeyTable();showToast('设备绑定已解除');
+}
+
+function deleteKey(keyId){
+  showModal(`<div class="modal-head"><h3>确认删除</h3><span class="close" onclick="closeModal()">&times;</span></div>
+  <div class="modal-body"><p>确定要删除此密钥吗？</p><p style="color:var(--danger);font-size:12px;margin-top:8px">删除后不可恢复，该密钥的所有测评记录也将一并删除。</p></div>
+  <div class="modal-foot"><button class="btn-cancel" onclick="closeModal()">取消</button><button class="btn-danger" onclick="confirmDelete('${keyId}')">确认删除</button></div>`);
+}
+
+async function confirmDelete(keyId){
+  const r=await API.post('/api/keys/delete',{keyId});
+  if(r.error){showToast(r.error);return;}
+  closeModal();renderKeyTable();updateDashboard();showToast('密钥已删除');
+}
+
+async function showKeyDetail(keyId){
+  showLoading();
+  const r=await API.get(`/api/keys/${keyId}`);
+  hideLoading();
+  if(r.error){showToast(r.error);return;}
+  const key=r;
+  const cResults=key.results||[];
+  const vResults=key.vitalityResults||[];
+
+  // 体质测评记录
+  let cResultsHtml;
+  if(cResults.length===0)cResultsHtml='<p style="color:var(--muted);text-align:center;padding:20px">暂无体质测评记录</p>';
+  else cResultsHtml='<div class="detail-results">'+cResults.map(res=>{
+    const c=CONSTITUTION_TYPES[res.mainType];const scores=res.scores||{};
+    const sortedScores=Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+    const maxScore=Math.max(...sortedScores.map(s=>s[1]),1);
+    return`<div class="detail-result-item"><div class="dr-date">${formatDate(res.date)}</div><div class="dr-type">${c.name} <span style="font-size:13px;color:var(--muted);font-family:sans-serif">（转化分 ${res.mainScore||scores[res.mainType]||0}）</span></div><div class="dr-scores">${sortedScores.map(([t,s])=>{const ct=CONSTITUTION_TYPES[t];const isMain=t===res.mainType;return`<div class="dr-score-row"><span style="${isMain?'font-weight:700':''}">${ct.name}</span><div class="dr-score-bar"><b style="width:${s/maxScore*100}%;background:${isMain?'var(--ink)':'var(--jade)'}"></b></div><strong>${s}</strong></div>`;}).join('')}</div>${res.secondaryTypes&&res.secondaryTypes.length>0?`<p style="font-size:11px;color:var(--muted);margin-top:8px">兼有倾向：${res.secondaryTypes.map(t=>CONSTITUTION_TYPES[t].name).join('、')}</p>`:''}</div>`;
+  }).join('')+'</div>';
+
+  // 生活力测评记录
+  let vResultsHtml;
+  if(vResults.length===0)vResultsHtml='<p style="color:var(--muted);text-align:center;padding:20px">暂无生活力测评记录</p>';
+  else vResultsHtml='<div class="detail-results">'+vResults.map(res=>{
+    const dimScores=res.dimScores||[0,0,0,0,0,0];
+    return`<div class="detail-result-item"><div class="dr-date">${formatDate(res.date)}</div><div class="dr-type">综合得分 ${res.totalScore||0} <span style="font-size:13px;color:var(--muted);font-family:sans-serif">/ 100</span></div><div class="dr-vitality-info">状态：${res.statusText||'—'}<br>目标：<b>${res.chosenGoal||'—'}</b><br>TOP3关注：${(res.topDims||[]).join(' / ')||'—'}</div><div class="dr-scores" style="margin-top:10px">${VITALITY_DIMS.map((d,i)=>{return`<div class="dr-score-row"><span>${VITALITY_SHORT[i]}</span><div class="dr-score-bar"><b style="width:${dimScores[i]}%;background:var(--jade)"></b></div><strong>${dimScores[i]}</strong></div>`;}).join('')}</div></div>`;
+  }).join('')+'</div>';
+
+  const expired=key.memberExpiresAt&&new Date(key.memberExpiresAt)<new Date();
+  const memberStatus=key.isTest?'测试密钥':(key.isMember?(expired?'会员已过期':'已解锁会员（有效期至 '+dateStr(key.memberExpiresAt)+'）'):'基础版');
+  const vStatus=key.vitalityStatus==='completed'?'已完成':'未使用';
+
+  showModal(`<div class="modal-head"><h3>密钥详情</h3><span class="close" onclick="closeModal()">&times;</span></div>
+  <div class="modal-body">
+    <div class="detail-key">${key.key}</div>
+    ${key.remark?`<p style="color:var(--muted);font-size:13px;margin-top:6px">备注：${key.remark}</p>`:''}
+    <div class="detail-info">
+      <div class="detail-info-item"><label>创建管理员</label>${key.createdByNickname}</div>
+      <div class="detail-info-item"><label>创建时间</label>${formatDate(key.createdAt)}</div>
+      <div class="detail-info-item"><label>体质测评状态</label>${key.status==='disabled'?'已停用':(key.status==='completed'?'已完成':'未使用')}</div>
+      <div class="detail-info-item"><label>生活力测评状态</label>${vStatus}</div>
+      <div class="detail-info-item"><label>会员权限</label>${memberStatus}</div>
+      <div class="detail-info-item"><label>密钥类型</label>${key.isTest?'测试密钥':'常规密钥'}</div>
+    </div>
+    <div class="detail-section-title">体质测评记录（${cResults.length}次）</div>
+    ${cResultsHtml}
+    <div class="detail-section-title">生活力测评记录（${vResults.length}次）</div>
+    ${vResultsHtml}
+  </div>
+  <div class="modal-foot"><button class="btn-cancel" onclick="closeModal()">关闭</button></div>`);
+}
+
+/* ════ 子管理员管理 ════ */
+document.getElementById('addSubBtn').addEventListener('click',async()=>{
+  const account=document.getElementById('subAccount').value.trim();
+  const nickname=document.getElementById('subNickname').value.trim();
+  const dailyLimit=parseInt(document.getElementById('subDailyLimit').value)||20;
+  if(!account||!/^[a-zA-Z0-9_]+$/.test(account)){showToast('请输入有效的英文账号');return;}
+  if(!nickname){showToast('请输入显示昵称');return;}
+  showLoading();
+  try{
+    const r=await API.post('/api/admins',{username:account,nickname,dailyLimit});
+    hideLoading();
+    if(r.error){showToast(r.error);return;}
+    document.getElementById('subAccount').value='';document.getElementById('subNickname').value='';document.getElementById('subDailyLimit').value=20;
+    const pwd=r.admin.password;
+    showModal(`<div class="modal-head"><h3>子管理员已创建</h3><span class="close" onclick="closeModal()">&times;</span></div>
+    <div class="modal-body">
+      <p style="text-align:center;margin-bottom:10px">请复制以下初始密码并单独发送给子管理员</p>
+      <div class="pwd-show"><label>账号</label><div class="pwd" style="font-size:16px">${account}</div><label style="margin-top:12px">初始密码</label><div class="pwd">${pwd}</div><button class="copy-btn" onclick="copyToClipboard('账号:${account} 密码:${pwd}')">复制账号密码</button></div>
+      <p style="font-size:12px;color:var(--muted);text-align:center;margin-top:10px">此密码仅显示一次，请妥善保存</p>
+    </div>
+    <div class="modal-foot"><button class="btn-ok" onclick="closeModal()">我已保存</button></div>`);
+    renderSubAdmins();populateAdminFilter();
+  }catch(e){
+    hideLoading();
+    showToast('操作失败: '+(e.message||e));
+    console.error('addSub error:',e);
+  }
+});
+
+/* 子管理员搜索筛选事件 */
+document.getElementById('subFilterBtn')?.addEventListener('click',applySubFilters);
+document.getElementById('subResetBtn')?.addEventListener('click',()=>{
+  document.getElementById('subSearchInput').value='';
+  document.getElementById('subOpTypeFilter').value='';
+  document.getElementById('subDateFilter').value='';
+  document.getElementById('subStatusFilter').value='';
+  applySubFilters();
+});
+document.getElementById('subSearchInput')?.addEventListener('input',applySubFilters);
+document.getElementById('subOpTypeFilter')?.addEventListener('change',applySubFilters);
+document.getElementById('subDateFilter')?.addEventListener('change',applySubFilters);
+document.getElementById('subStatusFilter')?.addEventListener('change',applySubFilters);
+
+/* 存储所有子管理员数据供筛选使用 */
+let _allSubAdmins=[];
+
+async function renderSubAdmins(){
+  const r=await API.get('/api/admins');
+  if(r.error)return;
+  _allSubAdmins=r.admins.filter(a=>a.role==='sub');
+  applySubFilters();
+}
+
+function applySubFilters(){
+  const search=document.getElementById('subSearchInput')?.value.trim().toLowerCase()||'';
+  const opType=document.getElementById('subOpTypeFilter')?.value||'';
+  const dateRange=document.getElementById('subDateFilter')?.value||'';
+  const status=document.getElementById('subStatusFilter')?.value||'';
+
+  const now=new Date();
+  let filtered=_allSubAdmins.filter(a=>{
+    // 搜索：账号或昵称
+    if(search){
+      const name=(a.nickname||'').toLowerCase();
+      const acc=(a.username||'').toLowerCase();
+      if(!name.includes(search)&&!acc.includes(search))return false;
+    }
+    // 状态筛选
+    if(status==='normal'&&a.frozen)return false;
+    if(status==='frozen'&&!a.frozen)return false;
+    // 操作类型 + 时间筛选
+    if(opType||dateRange){
+      const ops=a.operations||[];
+      let hasMatch=false;
+      for(const o of ops){
+        let opMatch=true,dateMatch=true;
+        if(opType&&o.action!==opType)opMatch=false;
+        if(dateRange){
+          const oTime=new Date(o.time);
+          if(dateRange==='today'){
+            dateMatch=oTime.toDateString()===now.toDateString();
+          }else if(dateRange==='week'){
+            dateMatch=(now-oTime)<=7*24*60*60*1000;
+          }else if(dateRange==='month'){
+            dateMatch=(now-oTime)<=30*24*60*60*1000;
+          }
+        }
+        if(opMatch&&dateMatch){hasMatch=true;break;}
+      }
+      if(!hasMatch)return false;
+    }
+    return true;
+  });
+
+  const list=document.getElementById('subAdminList');
+  if(filtered.length===0){
+    list.innerHTML='<div style="background:#fff;border-radius:12px;padding:40px;text-align:center;color:var(--muted)">未找到匹配的子管理员</div>';
+    return;
+  }
+  list.innerHTML=filtered.map(a=>{
+    const ops=a.operations||[];
+    const opsId=`ops-${a.id}`;
+    const hasOps=ops.length>0;
+    return`<div class="sub-card">
+      <div class="sc-head">
+        <div>
+          <div class="sc-name">${a.nickname||'未设置'}</div>
+          <div class="sc-account">@${a.username}</div>
+          <div class="sc-status">状态：${a.frozen?'<span style="color:var(--danger)">已冻结</span>':'<span style="color:var(--jade)">正常</span>'} · 每日限额 ${a.dailyLimit<0?'不限':a.dailyLimit+'个'}</div>
+        </div>
+        <div class="sc-actions">
+          <button onclick="setLimit('${a.id}')">设置限额</button>
+          <button onclick="confirmResetPwd('${a.id}')">重置密码</button>
+          ${a.frozen?`<button onclick="confirmToggleFreeze('${a.id}',false)">恢复</button>`:`<button onclick="confirmToggleFreeze('${a.id}',true)">冻结</button>`}
+          <button class="danger" onclick="deleteSubAdmin('${a.id}')">删除</button>
+        </div>
+      </div>
+      <div class="sc-logs">
+        <span class="sub-ops-toggle" onclick="toggleSubOps('${opsId}',this)">
+          <span class="arrow">›</span> 操作记录（${ops.length}条）
+        </span>
+        <div class="sub-ops-content" id="${opsId}">
+          ${hasOps?ops.map(o=>`<p>${formatDate(o.time)} · ${o.action} ${o.detail||''}</p>`).join(''):'<p class="sub-ops-empty">暂无操作记录</p>'}
+        </div>
+        <p class="sc-summary">累计生成密钥 ${a.operationStats?a.operationStats.genCount:0} 个 · 累计解锁会员 ${a.operationStats?a.operationStats.unlockCount:0} 个</p>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleSubOps(opsId,toggleEl){
+  const el=document.getElementById(opsId);
+  if(!el)return;
+  if(el.classList.contains('open')){
+    el.classList.remove('open');
+    toggleEl.classList.remove('open');
+  }else{
+    el.classList.add('open');
+    toggleEl.classList.add('open');
+  }
+}
+
+function setLimit(adminId){
+  showModal(`<div class="modal-head"><h3>设置每日生成上限</h3><span class="close" onclick="closeModal()">&times;</span></div>
+  <div class="modal-body"><div class="form-field"><label>每日生成密钥上限（设为0表示不限）</label><input id="limitInput" type="number" value="20" min="0"></div></div>
+  <div class="modal-foot"><button class="btn-cancel" onclick="closeModal()">取消</button><button class="btn-ok" onclick="saveLimit('${adminId}')">保存</button></div>`);
+}
+
+async function saveLimit(adminId){
+  const val=parseInt(document.getElementById('limitInput').value);
+  const limit=val===0?-1:val;
+  const r=await API.post('/api/admins/update',{adminId,dailyLimit:limit});
+  if(r.error){showToast(r.error);return;}
+  closeModal();renderSubAdmins();showToast('限额已更新');
+}
+
+function confirmResetPwd(adminId){
+  showModal(`<div class="modal-head"><h3>确认重置密码</h3><span class="close" onclick="closeModal()">&times;</span></div>
+  <div class="modal-body"><p>确定要重置此管理员的密码吗？</p><p style="color:var(--muted);font-size:12px;margin-top:8px">重置后将生成一个新的随机密码，原密码立即失效。</p></div>
+  <div class="modal-foot"><button class="btn-cancel" onclick="closeModal()">取消</button><button class="btn-ok" onclick="doResetPwd('${adminId}')">确认重置</button></div>`);
+}
+
+async function doResetPwd(adminId){
+  const r=await API.post('/api/admins/reset-pwd',{adminId});
+  if(r.error){showToast(r.error);return;}
+  showModal(`<div class="modal-head"><h3>密码已重置</h3><span class="close" onclick="closeModal()">&times;</span></div>
+  <div class="modal-body">
+    <div class="pwd-show"><label>新密码</label><div class="pwd">${r.password}</div><button class="copy-btn" onclick="copyToClipboard('${r.password}')">复制密码</button></div>
+    <p style="font-size:12px;color:var(--muted);text-align:center;margin-top:10px">请通知子管理员使用新密码登录</p>
+  </div>
+  <div class="modal-foot"><button class="btn-ok" onclick="closeModal()">知道了</button></div>`);
+  renderSubAdmins();
+}
+
+function confirmToggleFreeze(adminId,freeze){
+  showModal(`<div class="modal-head"><h3>${freeze?'确认冻结':'确认恢复'}</h3><span class="close" onclick="closeModal()">&times;</span></div>
+  <div class="modal-body"><p>确定要${freeze?'冻结':'恢复'}此管理员吗？</p><p style="color:${freeze?'var(--danger)':'var(--muted)'};font-size:12px;margin-top:8px">${freeze?'冻结后该管理员将无法登录管理后台。':'恢复后该管理员可以正常登录管理后台。'}</p></div>
+  <div class="modal-foot"><button class="btn-cancel" onclick="closeModal()">取消</button><button class="${freeze?'btn-danger':'btn-ok'}" onclick="doToggleFreeze('${adminId}',${freeze})">${freeze?'确认冻结':'确认恢复'}</button></div>`);
+}
+
+async function doToggleFreeze(adminId,freeze){
+  const r=await API.post('/api/admins/update',{adminId,frozen:freeze});
+  if(r.error){showToast(r.error);return;}
+  closeModal();renderSubAdmins();showToast(freeze?'已冻结':'已恢复');
+}
+
+function deleteSubAdmin(adminId){
+  showModal(`<div class="modal-head"><h3>确认删除</h3><span class="close" onclick="closeModal()">&times;</span></div>
+  <div class="modal-body"><p>确定要删除此子管理员吗？</p><p style="color:var(--danger);font-size:12px;margin-top:8px">删除后该管理员将无法再进入管理后台，但其生成的密钥记录将保留。</p></div>
+  <div class="modal-foot"><button class="btn-cancel" onclick="closeModal()">取消</button><button class="btn-danger" onclick="doDeleteSubAdmin('${adminId}')">确认删除</button></div>`);
+}
+
+async function doDeleteSubAdmin(adminId){
+  const r=await API.post('/api/admins/delete',{adminId});
+  if(r.error){showToast(r.error);return;}
+  closeModal();renderSubAdmins();showToast('已删除');
+}
+</script>
+
+</body></html>
